@@ -127,7 +127,7 @@ export default function Home() {
                   size="lg"
                   className="w-full sm:w-auto"
                 >
-                  <Link href="https://github.com/Mohamed-4rarh/next-supabase-starter">
+                  <Link href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter">
                     <Github className="mr-2 h-5 w-5" />
                     View on GitHub
                   </Link>
@@ -715,7 +715,7 @@ export default function Home() {
 
             <div className="mt-12 text-center">
               <Button asChild>
-                <Link href="https://github.com/Mohamed-4rarh/next-supabase-starter/stargazers">
+                <Link href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/stargazers">
                   <Github className="mr-2 h-4 w-4" />
                   Star us on GitHub
                 </Link>
@@ -740,7 +740,7 @@ export default function Home() {
                 <li>
                   Create a new project using the CLI:
                   <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded block">
-                    npx create-next-supabase-starter my-project
+                    npx create-swift-simplify-nextjs-supabase-starter my-project
                   </code>
                 </li>
                 <li>
@@ -1317,7 +1317,7 @@ export default function Home() {
                     size="lg"
                     className="text-base"
                   >
-                    <Link href="https://github.com/Mohamed-4rarh/next-supabase-starter">
+                    <Link href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter">
                       <Github className="mr-2 h-5 w-5" />
                       View Source
                     </Link>
@@ -1346,7 +1346,7 @@ export default function Home() {
               </p>
               <div className="flex space-x-4">
                 <a
-                  href="https://github.com/Mohamed-4rarh/next-supabase-starter"
+                  href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter"
                   className="text-gray-500 hover:text-primary"
                 >
                   <svg
@@ -1431,7 +1431,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <a
-                    href="https://github.com/Mohamed-4rarh/next-supabase-starter/issues"
+                    href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/issues"
                     className="text-gray-500 hover:text-primary"
                   >
                     Report Issues
@@ -1439,7 +1439,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/Mohamed-4rarh/next-supabase-starter/blob/main/CONTRIBUTING.md"
+                    href="https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/blob/main/CONTRIBUTING.md"
                     className="text-gray-500 hover:text-primary"
                   >
                     Contribute
@@ -1447,7 +1447,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a
-                    href="mailto:contact@example.com"
+                    href="mailto:zidongchn@gmail.com"
                     className="text-gray-500 hover:text-primary"
                   >
                     Email
