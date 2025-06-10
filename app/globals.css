@@ -34,26 +34,48 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+  
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 28 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 28 80% 20%;
-    --accent-foreground: 28 100% 75%;
+    /* 更柔和的深色背景 */
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    /* 卡片使用稍亮的背景色 */
+    --card: 222 84% 5.9%;
+    --card-foreground: 210 40% 98%;
+    
+    /* 弹出层 */
+    --popover: 222 84% 5.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* 主色调保持橙色，但调整饱和度 */
+    --primary: 28 100% 55%;
+    --primary-foreground: 222 84% 4.9%;
+    
+    /* 次要颜色使用更好的对比度 */
+    --secondary: 217 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    
+    /* 静音色调 */
+    --muted: 217 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    /* 强调色 */
+    --accent: 217 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* 破坏性颜色 */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 28 100% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* 边框和输入框 */
+    --border: 217 32.6% 17.5%;
+    --input: 217 32.6% 17.5%;
+    
+    /* 焦点环 */
+    --ring: 28 100% 55%;
+    
+    /* 图表颜色 */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -68,5 +90,25 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* 自定义暗色主题样式 */
+@layer components {
+  .dark .gradient-bg {
+    background: linear-gradient(135deg, 
+      hsl(222, 84%, 4.9%) 0%, 
+      hsl(217, 32.6%, 8%) 50%, 
+      hsl(222, 84%, 4.9%) 100%);
+  }
+  
+  .dark .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   }
 }

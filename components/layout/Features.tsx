@@ -223,22 +223,24 @@ export default function Features() {
   return (
     <section
       id="features"
-      className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-900"
+      className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-slate-950/50"
     >
       <div className="container px-4 md:px-6 mx-auto">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8 text-gray-900 dark:text-white">
           Features
         </h2>
 
-        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {features.map((feature) => (
             <div
               key={feature.name}
-              className="flex flex-col items-center space-y-2 border-gray-800 p-4 rounded-lg"
+              className="group flex flex-col items-center space-y-4 bg-white dark:bg-slate-900/80 p-6 rounded-xl border border-gray-200 dark:border-slate-700/50 hover:border-primary/30 dark:hover:border-primary/40 transition-all duration-300 hover:shadow-lg dark:hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
             >
-              {feature.icon}
-              <h3 className="text-xl font-bold">{feature.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+              <div className="group-hover:scale-110 transition-transform duration-300">
+                {feature.icon}
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center">{feature.name}</h3>
+              <p className="text-sm text-gray-600 dark:text-slate-400 text-center leading-relaxed">
                 {feature.description}
               </p>
             </div>
