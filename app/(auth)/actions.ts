@@ -1,58 +1,60 @@
 "use server";
 
-import { createClient } from "@/supabase/server";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 //sign up with email and password
 export async function signup(formData: {
   name: string;
   email: string;
   password: string;
-  phone: string;
+  phone?: string;
 }) {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signUp({
-    email: formData.email as string,
-    password: formData.password as string,
-    options: {
-      data: {
-        full_name: formData.name as string,
-        phone: formData.phone as string,
+  try {
+    const response = await auth.api.signUpEmail({
+      body: {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
       },
-    },
-  });
+      headers: await headers(),
+    });
 
-  if (error) {
-    return { error: error.message };
+    return { user: response.user, session: response };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "注册失败";
+    return { error: errorMessage };
   }
-
-  return { user: data.user, session: data.session };
 }
 
 //login with email and password
 export async function login(formData: { email: string; password: string }) {
-  const supabase = await createClient();
+  try {
+    const response = await auth.api.signInEmail({
+      body: {
+        email: formData.email,
+        password: formData.password,
+      },
+      headers: await headers(),
+    });
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: formData.email,
-    password: formData.password,
-  });
-
-  if (error) {
-    return { error: error.message };
+    return { user: response.user, session: response };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "登录失败";
+    return { error: errorMessage };
   }
-
-  return { user: data.user, session: data.session };
 }
 
 //logout and remove user
 export async function logOut() {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
+  try {
+    await auth.api.signOut({
+      headers: await headers(),
+    });
 
-  if (error) {
-    return { error: error.message };
+    return { success: true };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "登出失败";
+    return { error: errorMessage };
   }
-
-  return;
 }

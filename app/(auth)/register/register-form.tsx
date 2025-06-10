@@ -4,7 +4,6 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { signup } from "../actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,30 +20,25 @@ import {
 import { PasswordInput } from "@/components/ui/password-input";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 const signupSchema = z.object({
   name: z
     .string()
-    .min(2, { message: "Full name must be at least 2 characters long" })
-    .max(50, { message: "Full name can't exceed 50 characters" }),
+    .min(2, { message: "姓名至少需要2个字符" })
+    .max(50, { message: "姓名不能超过50个字符" }),
 
-  email: z.string().email({ message: "Invalid email format" }),
-
-  phone: z
-    .string()
-    .regex(/^\d+$/, { message: "Phone number must contain only digits" })
-    .min(10, { message: "Phone number must be at least 10 digits" })
-    .max(15, { message: "Phone number can't exceed 15 digits" }),
+  email: z.string().email({ message: "邮箱格式无效" }),
 
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long" })
+    .min(8, { message: "密码至少需要8个字符" })
     .regex(/[A-Z]/, {
-      message: "Password must include at least one uppercase letter",
+      message: "密码必须包含至少一个大写字母",
     })
-    .regex(/\d/, { message: "Password must include at least one number" })
+    .regex(/\d/, { message: "密码必须包含至少一个数字" })
     .regex(/[\W_]/, {
-      message: "Password must include at least one special character",
+      message: "密码必须包含至少一个特殊字符",
     }),
 });
 
@@ -57,33 +51,67 @@ export default function RegisterForm() {
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
       password: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     startTransition(async () => {
-      const response = await signup(values);
+      try {
+        const { error } = await authClient.signUp.email({
+          email: values.email,
+          password: values.password,
+          name: values.name,
+        });
 
-      if (response.error) {
-        toast.error(
-          "Something went wrong with your credintials! try again later."
-        );
-        return;
+        if (error) {
+          toast.error("注册失败：" + error.message);
+          return;
+        }
+
+        toast.success("注册成功！请检查您的邮箱以验证账户。");
+        router.push("/login");
+      } catch {
+        toast.error("注册时发生错误，请稍后重试。");
       }
-
-      toast.success("Just a step away! check your inbox for activation link.");
-      router.push("/");
     });
   }
+
+  async function handleSocialSignup(provider: "google" | "github") {
+    startTransition(async () => {
+      try {
+        await authClient.signIn.social({
+          provider,
+        });
+      } catch {
+        toast.error(`${provider} 注册失败`);
+      }
+    });
+  }
+
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
       <div className="grid gap-6">
-        <Button variant="outline" type="button" disabled={isPending}>
-          <Icons.google className="mr-2 h-4 w-4" />
-          Sign up with Google
-        </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button 
+            variant="outline" 
+            type="button" 
+            disabled={isPending}
+            onClick={() => handleSocialSignup("google")}
+          >
+            <Icons.google className="mr-2 h-4 w-4" />
+            Google 注册
+          </Button>
+          <Button 
+            variant="outline" 
+            type="button" 
+            disabled={isPending}
+            onClick={() => handleSocialSignup("github")}
+          >
+            <Icons.gitHub className="mr-2 h-4 w-4" />
+            GitHub 注册
+          </Button>
+        </div>
         <Separator />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -93,10 +121,10 @@ export default function RegisterForm() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>姓名</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="my name is..."
+                        placeholder="请输入您的姓名"
                         {...field}
                         disabled={isPending}
                       />
@@ -110,7 +138,7 @@ export default function RegisterForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>邮箱</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="example@mail.com"
@@ -124,30 +152,13 @@ export default function RegisterForm() {
               />
               <FormField
                 control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Pnone</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="+123456789"
-                        {...field}
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>密码</FormLabel>
                     <FormControl>
                       <PasswordInput
-                        placeholder="password"
+                        placeholder="请输入密码"
                         type="password"
                         {...field}
                         disabled={isPending}
@@ -158,14 +169,14 @@ export default function RegisterForm() {
                 )}
               />
             </div>
-            <Button className="mt-8 w-full">
+            <Button className="mt-8 w-full" disabled={isPending}>
               {isPending ? (
                 <div className="flex items-center justify-center gap-1">
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  <span>Becomming a member...</span>
+                  <span>注册中...</span>
                 </div>
               ) : (
-                "Become a member"
+                "创建账户"
               )}
             </Button>
           </form>
@@ -174,7 +185,7 @@ export default function RegisterForm() {
       <div className="text-center">
         <Link href="/login" className="w-full">
           <Button variant="outline" className="w-full">
-            Back to Login
+            返回登录
           </Button>
         </Link>
       </div>
