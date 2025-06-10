@@ -91,10 +91,10 @@ export function Header() {
             </button>
             <div>
               <Link
-                href="#get-started"
+                href="/login"
                 className="hidden md:inline-flex px-4 py-2 text-[14px] font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl dark:shadow-primary/20 dark:hover:shadow-primary/30"
               >
-                Purchase Now
+                Sign In
               </Link>
             </div>
           </div>
