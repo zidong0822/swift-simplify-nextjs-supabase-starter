@@ -1,58 +1,56 @@
-# Bujuan Next.js 15 Starter with Supabase, React Query
+# Swift Simplify Next.js + Supabase 启动模板
 
-A modern Next.js 15 starter template with Supabase authentication, React Query for data fetching, and built-in wrappers for queries and authentication. This starter is designed to accelerate development by providing preconfigured hooks, utilities, and best practices.
+一个现代化的 Next.js 15 启动模板，集成了 Supabase 身份验证、React Query 数据获取，以及内置的查询和认证包装器。该模板旨在通过提供预配置的 hooks、实用工具和最佳实践来加速开发。
 
-## 🚀 Features
+## 🌟 主要特性
 
-- **Next.js 15** – The latest Next.js version for optimized performance.
-- **Supabase Authentication** – Built-in auth system with user session handling.
-- **React Query** – Efficient data fetching and caching.
-- **ShadCN Components** – Prebuilt UI components for faster development.
-- **Tailwind CSS** – Utility-first styling for rapid UI building.
-- **Zod Validation** – Schema-based form validation for better data handling.
-- **Prebuilt Hooks** – Hooks for fetching data and mutations in client components.
-- **Query & Auth Wrappers** – Easily manage authentication state and query handling.
+- **Next.js 15** - 最新版本，提供优化的性能和开发体验
+- **Supabase 集成** - 内置身份验证系统和用户会话管理
+- **React Query** - 高效的数据获取和缓存管理
+- **ShadCN 组件** - 精美的预构建 UI 组件
+- **Tailwind CSS** - 实用优先的 CSS 框架
+- **Zod 验证** - 基于模式的表单验证
+- **预构建 Hooks** - 用于数据获取和修改的自定义 hooks
+- **类型安全** - 完整的 TypeScript 支持
 
-## 📦 Installation
+## 📦 安装
 
-Create a new project using the CLI (if available):
+使用 CLI 创建新项目（如果可用）：
 
-```sh
-npx create-bujuan-nextjs-supabase-starter@latest my-project
+```bash
+npx create-swift-simplify-starter@latest my-project
 ```
 
-Or manually clone the repository:
+或手动克隆仓库：
 
-```sh
-git clone https://github.com/your-username/bujuan-nextjs-supabase-starter.git my-project
+```bash
+git clone https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter.git my-project
 cd my-project
 pnpm install
 ```
 
-## 🛠 Setup
+## ⚙️ 环境配置
 
-### 1. Environment Variables
+1. 创建 `.env.local` 文件并添加：
 
-Create a `.env.local` file and add:
-
-```sh
+```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 2. Run Development Server
+2. 启动开发服务器：
 
-```sh
+```bash
 pnpm dev
 ```
 
-Your app should be running at [http://localhost:3000](http://localhost:3000).
+访问 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-## 📌 Usage
+## 📚 使用指南
 
-### 🏗 Authentication
+### 认证系统
 
-The `AuthContext` ensures user authentication is managed across the app.
+使用 `AuthContext` 管理全局认证状态：
 
 ```tsx
 "use client";
@@ -64,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryKey: ["user"],
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
-      return data?.user ?? null; // ✅ Ensures it's never undefined
+      return data?.user ?? null;
     },
     staleTime: 0,
   });
@@ -79,15 +77,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth 必须在 AuthProvider 内使用");
   }
   return context;
 }
 ```
 
-### 🔄 Fetching Data
+### 数据获取
 
-Use the `useClientFetch` hook for fetching data efficiently on client components:
+使用 `useClientFetch` hook 在客户端组件中获取数据：
 
 ```tsx
 import { useClientFetch } from "@/hooks/useClientFetch";
@@ -95,30 +93,30 @@ import { useClientFetch } from "@/hooks/useClientFetch";
 const Posts = () => {
   const { data, isLoading } = useClientFetch("posts", "posts");
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <div>加载中...</div>;
 
   return (
     <ul>
       {data?.map((post) => (
-        <li key={post.id}>{post.name}</li>
+        <li key={post.id}>{post.title}</li>
       ))}
     </ul>
   );
 };
 ```
 
-#### Advanced Filtering Example
+#### 高级筛选示例
 
 ```tsx
 const FilteredUsers = () => {
   const { data, isLoading } = useClientFetch(
-    "filtered-users", // key
-    "users", // table name
-    5000, // cache time
-    (query) => query.eq("role", "admin") // Supabase query filter
+    "filtered-users", // 缓存键
+    "users", // 表名
+    5000, // 缓存时间
+    (query) => query.eq("role", "admin") // Supabase 查询过滤器
   );
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <div>加载中...</div>;
 
   return (
     <ul>
@@ -132,107 +130,89 @@ const FilteredUsers = () => {
 };
 ```
 
-### 📮 Mutations
+### 数据修改
 
-Use the `useClientMutate` hook for inserting, updating, and deleting data on client components:
+使用 `useClientMutate` hook 进行数据的增删改：
 
 ```tsx
 import { useClientMutate } from "@/hooks/useClientMutate";
 
+// 添加数据
 const AddPost = () => {
   const mutation = useClientMutate("posts", "insert");
 
-  const handleSubmit = async () => {
-    mutation.mutate({ id: Date.now(), name: "New Post" });
+  const handleSubmit = () => {
+    mutation.mutate({ title: "新文章", content: "内容" });
   };
 
-  return <button onClick={handleSubmit}>Add Post</button>;
+  return <button onClick={handleSubmit}>添加文章</button>;
 };
-```
 
-#### Updating Data Example
-
-```tsx
+// 更新数据
 const UpdatePost = () => {
   const mutation = useClientMutate("posts", "update");
 
   const handleUpdate = () => {
-    mutation.mutate({ id: 1, name: "Updated Post" });
+    mutation.mutate({ id: 1, title: "更新的文章" });
   };
 
-  return <button onClick={handleUpdate}>Update User</button>;
+  return <button onClick={handleUpdate}>更新文章</button>;
 };
-```
 
-#### Deleting Data Example
-
-```tsx
-const DeleteUser = () => {
-  const mutation = useClientMutate("users", "delete");
+// 删除数据
+const DeletePost = () => {
+  const mutation = useClientMutate("posts", "delete");
 
   const handleDelete = () => {
     mutation.mutate({ id: 1 });
   };
 
-  return <button onClick={handleDelete}>Delete User</button>;
+  return <button onClick={handleDelete}>删除文章</button>;
 };
 ```
 
-## 🏗 Folder Structure
+## 📁 项目结构
 
 ```
-📦 bujuan-nextjs-supabase-starter
-├── 📂 app                 # Next.js app directory
-│   ├── 📂 (auth)           # Authentication pages
-│   │   ├── 📂 auth         # Authentication utilities
-│   │   │   ├── 📂 confirm  # Confirmation route
-│   │   │   │   └── route.ts
-│   │   ├── 📂 error        # Error handling
-│   │   ├── 📂 login        # Login page
-│   │   ├── 📂 register     # Register page
-│   │   ├── actions.ts      # Auth actions
-│   │   └── layout.tsx      # Auth layout
-│   ├── 📂 (dashboard)      # Dashboard pages
-│   ├── favicon.ico         # Favicon
-│   ├── globals.css         # Global styles
-│   ├── layout.tsx          # Main layout
-│   ├── not-found.tsx       # 404 Page
-│   └── page.tsx            # Home page
-├── 📂 components          # Shared UI components
-├── 📂 hooks               # Custom React Query hooks
-├    └── use-client-fetch.ts
-├    └── use-client-mutation.ts
-├── 📂 lib                 # Utilities & helpers
-├── 📂 public              # Static assets
-├── 📂 supabase            # Supabase integrations clients
-│   ├── client.ts          # Supabase client
-│   ├── middleware.ts      # Middleware configuration
-│   └── server.ts          # Server-side Supabase utilities
-├── 📂 node_modules        # Dependencies
-├── .env                   # Environment configuration
-├── .env.example           # Example environment variables
-├── .gitignore             # Git ignore file
-├── components.json        # UI component configurations
-├── eslint.config.mjs      # ESLint configuration
-├── middleware.ts          # Global middleware
-├── next-env.d.ts          # Next.js environment types
-├── next.config.ts         # Next.js configuration
-├── package.json           # Project dependencies
-├── pnpm-lock.yaml         # Lock file
-├── postcss.config.mjs     # PostCSS configuration
-├── README.md              # Project documentation
-├── tailwind.config.ts     # Tailwind CSS configuration
-└── tsconfig.json          # TypeScript configuration
+📦 swift-simplify-starter
+├── 📂 app                 # Next.js 应用目录
+│   ├── 📂 (auth)         # 认证相关页面
+│   ├── 📂 (dashboard)    # 仪表板页面
+│   ├── layout.tsx        # 主布局
+│   └── page.tsx          # 首页
+├── 📂 components         # 共享组件
+├── 📂 hooks              # 自定义 Hooks
+├── 📂 lib                # 工具函数
+├── 📂 public             # 静态资源
+├── 📂 supabase           # Supabase 集成
+│   ├── client.ts         # 客户端配置
+│   └── server.ts         # 服务端工具
+└── 📂 docs               # 项目文档
+    ├── 📂 landing-page   # 登陆页面文档
+    ├── development.md    # 开发指南
+    ├── deployment.md     # 部署指南
+    └── contributing.md   # 贡献指南
 ```
 
-## 🛠 Technologies I Used
+## 🛠️ 技术栈
 
-- **Next.js 15**
-- **Supabase**
-- **React Query**
-- **ShadCN Components**
-- **Tailwind CSS**
-- **Zod Validation**
-- **TypeScript**
-# swift-simplify-nextjs-supabase-starter
-# swift-simplify-nextjs-supabase-starter
+- **框架**: Next.js 15
+- **数据库**: Supabase
+- **状态管理**: React Query
+- **UI 组件**: ShadCN
+- **样式**: Tailwind CSS
+- **表单验证**: Zod
+- **类型系统**: TypeScript
+
+## 📖 文档
+
+详细文档请参考 `docs` 目录：
+
+- [开发指南](./docs/development.md)
+- [部署指南](./docs/deployment.md)
+- [贡献指南](./docs/contributing.md)
+- [登陆页面文档](./docs/landing-page/README.md)
+
+## 📄 许可证
+
+MIT © [您的名字]

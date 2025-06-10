@@ -1,0 +1,206 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 数据库指南
+
+## Supabase 配置
+- 所有数据库迁移文件应放在 [supabase/migrations](mdc:supabase/migrations) 目录中
+- 种子数据应放在 [supabase/seed.sql](mdc:supabase/seed.sql) 文件中
+- 类型生成应使用 Supabase CLI
+
+## 表命名规则
+- 使用小写字母和下划线
+- 表名使用复数形式
+- 关联表使用两个表名的组合，例如：`users_projects`
+
+## 字段命名
+- 主键统一使用 `id`
+- 外键使用 `表名_id` 格式
+- 时间戳字段使用 `created_at` 和 `updated_at`
+- 布尔字段使用 `is_` 前缀
+
+## 安全规则
+- 所有表都必须有 RLS（行级安全）策略
+- 敏感数据必须加密存储
+- 避免在客户端暴露敏感信息
+
+## 数据访问
+- 使用 [lib/supabase.ts](mdc:lib/supabase.ts) 中的客户端实例
+- 复杂查询应该封装在独立的函数中
+- 使用类型安全的查询构建器
+
+# 数据库规则
+
+## 数据库设计
+
+1. **表命名**
+   - 使用小写字母和下划线
+   - 使用复数形式
+   - 描述性和功能性命名
+
+2. **字段命名**
+   - 使用小写字母和下划线
+   - 避免使用保留字
+   - 使用清晰的描述性名称
+
+3. **主键设计**
+   ```sql
+   -- 使用 UUID 作为主键
+   id UUID DEFAULT gen_random_uuid() PRIMARY KEY
+   ```
+
+## 数据类型
+
+1. **常用类型**
+   ```sql
+   -- 文本类型
+   title TEXT NOT NULL,
+   description TEXT,
+   slug VARCHAR(255),
+   
+   -- 数字类型
+   price DECIMAL(10,2),
+   quantity INTEGER,
+   
+   -- 日期时间
+   created_at TIMESTAMPTZ DEFAULT NOW(),
+   updated_at TIMESTAMPTZ,
+   
+   -- 布尔值
+   is_active BOOLEAN DEFAULT true,
+   
+   -- JSON 数据
+   metadata JSONB DEFAULT '{}'::jsonb
+   ```
+
+2. **枚举类型**
+   ```sql
+   -- 创建枚举类型
+   CREATE TYPE user_role AS ENUM ('admin', 'user', 'guest');
+   
+   -- 使用枚举类型
+   role user_role DEFAULT 'user'
+   ```
+
+## 关系设计
+
+1. **外键约束**
+   ```sql
+   -- 添加外键
+   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+   
+   -- 添加索引
+   CREATE INDEX idx_user_id ON posts(user_id);
+   ```
+
+2. **多对多关系**
+   ```sql
+   -- 中间表
+   CREATE TABLE user_roles (
+     user_id UUID REFERENCES users(id),
+     role_id UUID REFERENCES roles(id),
+     PRIMARY KEY (user_id, role_id)
+   );
+   ```
+
+## 索引规范
+
+1. **索引类型**
+   - B-tree（默认）：适用于等值和范围查询
+   - GiST：适用于地理数据和全文搜索
+   - GIN：适用于数组和 JSONB 数据
+
+2. **索引策略**
+   ```sql
+   -- 单列索引
+   CREATE INDEX idx_email ON users(email);
+   
+   -- 复合索引
+   CREATE INDEX idx_user_created ON users(created_at, id);
+   
+   -- 部分索引
+   CREATE INDEX idx_active_users ON users(id) WHERE is_active = true;
+   ```
+
+## 安全规则
+
+1. **行级安全性**
+   ```sql
+   -- 启用 RLS
+   ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+   
+   -- 创建策略
+   CREATE POLICY "Users can view own data" ON users
+     FOR SELECT
+     USING (auth.uid() = id);
+   ```
+
+2. **权限控制**
+   ```sql
+   -- 授权
+   GRANT SELECT ON users TO authenticated;
+   GRANT INSERT, UPDATE ON users TO authenticated;
+   ```
+
+## 性能优化
+
+1. **查询优化**
+   - 使用适当的索引
+   - 避免全表扫描
+   - 优化 JOIN 操作
+
+2. **数据分区**
+   ```sql
+   -- 按时间分区
+   CREATE TABLE events (
+     id UUID,
+     created_at TIMESTAMPTZ,
+     data JSONB
+   ) PARTITION BY RANGE (created_at);
+   ```
+
+## 数据迁移
+
+1. **迁移文件命名**
+   ```sql
+   -- YYYYMMDDHHMMSS_description.sql
+   20240315123000_create_users_table.sql
+   20240315123100_add_user_roles.sql
+   ```
+
+2. **迁移内容**
+   ```sql
+   -- 向上迁移
+   CREATE TABLE users (
+     id UUID PRIMARY KEY,
+     email TEXT UNIQUE,
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+
+   -- 向下迁移
+   DROP TABLE users;
+   ```
+
+## 数据验证
+
+1. **约束**
+   ```sql
+   -- 检查约束
+   CHECK (price >= 0),
+   CHECK (quantity >= 0),
+   
+   -- 唯一约束
+   UNIQUE (email),
+   UNIQUE (slug)
+   ```
+
+2. **触发器**
+   ```sql
+   -- 更新时间戳触发器
+   CREATE TRIGGER set_updated_at
+     BEFORE UPDATE ON users
+     FOR EACH ROW
+     EXECUTE FUNCTION update_updated_at_column();
+   ```
