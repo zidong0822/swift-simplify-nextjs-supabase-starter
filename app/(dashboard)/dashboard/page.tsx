@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/supabase/server";
 import { Home } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default function DashboardPage() {
   return (
@@ -29,34 +30,50 @@ export default function DashboardPage() {
 }
 
 async function UserData() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-  const userData = user?.user_metadata;
+    const user = session?.user;
 
-  return (
-    <div className="max-w-xl w-full mx-auto space-y-5">
-      <p className="text-gray-600 text-2xl mb-10">
-        Hello {userData?.full_name}
-      </p>
-      <div className="flex items-center justify-between">
-        <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
-          {userData?.email}
+    if (!user) {
+      return (
+        <div className="max-w-xl w-full mx-auto space-y-5">
+          <p className="text-gray-600 text-2xl mb-10">未找到用户信息</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-xl w-full mx-auto space-y-5">
+        <p className="text-gray-600 text-2xl mb-10">
+          Hello {user.name || user.email}
         </p>
-        <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
-          {userData?.email_verified ? "Verified" : "Unverified"}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
+            {user.email}
+          </p>
+          <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
+            {user.emailVerified ? "已验证" : "未验证"}
+          </p>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
+            用户 ID: {user.id}
+          </p>
+          <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
+            创建时间: {new Date(user.createdAt).toLocaleDateString()}
+          </p>
+        </div>
       </div>
-      <div className="flex items-center justify-between">
-        <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
-          {userData?.phone}
-        </p>
-        <p className="text-gray-600 font-mono p-0.5 rounded bg-slate-300">
-          {userData?.phone_verified ? "Verified" : "Unverified"}
-        </p>
+    );
+  } catch (error) {
+    console.error("获取用户数据失败:", error);
+    return (
+      <div className="max-w-xl w-full mx-auto space-y-5">
+        <p className="text-gray-600 text-2xl mb-10">获取用户信息失败</p>
       </div>
-    </div>
-  );
+    );
+  }
 }

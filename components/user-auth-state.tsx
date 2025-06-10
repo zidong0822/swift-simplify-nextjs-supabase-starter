@@ -14,25 +14,26 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { logOut } from "@/app/(auth)/actions";
-import { Icons } from "@/components/ui/icons"; // Import spinner icon
+import { Icons } from "@/components/ui/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 export default function UserAuthState() {
   const { user } = useAuth();
-  const [isPending, startTransision] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
 
   async function removeUser() {
-    startTransision(async () => {
-      const response = await logOut();
-      if (response?.error) {
-        toast.error("Oops Something went wrong!");
-        return;
+    startTransition(async () => {
+      try {
+        await authClient.signOut();
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+        toast.success("您已成功登出！");
+      } catch (error) {
+        console.error("登出失败:", error);
+        toast.error("登出时发生错误！");
       }
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("you're Logged Out!");
     });
   }
 
@@ -48,26 +49,26 @@ export default function UserAuthState() {
                 </div>
               )}
               <AvatarImage
-                src={user?.user_metadata?.avatar_url || ""}
+                src={user?.image || ""}
                 alt="User Avatar"
               />
               <AvatarFallback>
-                {user?.email?.charAt(0).toUpperCase()}
+                {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>我的账户</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={"/dashboard"}>Dashboard</Link>
+              <Link href={"/dashboard"}>仪表板</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <button onClick={removeUser} disabled={isPending}>
                 {isPending ? (
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  "Log Out"
+                  "登出"
                 )}
               </button>
             </DropdownMenuItem>
@@ -79,7 +80,7 @@ export default function UserAuthState() {
             {isPending ? (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              "Verify Now"
+              "登录"
             )}
           </Button>
         </Link>
