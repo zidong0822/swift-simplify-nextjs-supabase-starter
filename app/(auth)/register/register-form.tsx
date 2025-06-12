@@ -25,20 +25,20 @@ import { authClient } from "@/lib/auth-client";
 const signupSchema = z.object({
   name: z
     .string()
-    .min(2, { message: "姓名至少需要2个字符" })
-    .max(50, { message: "姓名不能超过50个字符" }),
+    .min(2, { message: "Name must be at least 2 characters" })
+    .max(50, { message: "Name cannot exceed 50 characters" }),
 
-  email: z.string().email({ message: "邮箱格式无效" }),
+  email: z.string().email({ message: "Invalid email format" }),
 
   password: z
     .string()
-    .min(8, { message: "密码至少需要8个字符" })
+    .min(8, { message: "Password must be at least 8 characters" })
     .regex(/[A-Z]/, {
-      message: "密码必须包含至少一个大写字母",
+      message: "Password must contain at least one uppercase letter",
     })
-    .regex(/\d/, { message: "密码必须包含至少一个数字" })
+    .regex(/\d/, { message: "Password must contain at least one number" })
     .regex(/[\W_]/, {
-      message: "密码必须包含至少一个特殊字符",
+      message: "Password must contain at least one special character",
     }),
 });
 
@@ -65,14 +65,14 @@ export default function RegisterForm() {
         });
 
         if (error) {
-          toast.error("注册失败：" + error.message);
+          toast.error("Registration failed: " + error.message);
           return;
         }
 
-        toast.success("注册成功！请检查您的邮箱以验证账户。");
+        toast.success("Registration successful! Please check your email to verify your account.");
         router.push("/login");
       } catch {
-        toast.error("注册时发生错误，请稍后重试。");
+        toast.error("An error occurred during registration. Please try again later.");
       }
     });
   }
@@ -84,7 +84,7 @@ export default function RegisterForm() {
           provider,
         });
       } catch {
-        toast.error(`${provider} 注册失败`);
+        toast.error(`${provider} registration failed`);
       }
     });
   }
@@ -100,7 +100,7 @@ export default function RegisterForm() {
             onClick={() => handleSocialSignup("google")}
           >
             <Icons.google className="mr-2 h-4 w-4" />
-            Google 注册
+            Sign up with Google
           </Button>
           <Button 
             variant="outline" 
@@ -109,7 +109,7 @@ export default function RegisterForm() {
             onClick={() => handleSocialSignup("github")}
           >
             <Icons.gitHub className="mr-2 h-4 w-4" />
-            GitHub 注册
+            Sign up with GitHub
           </Button>
         </div>
         <Separator />
@@ -121,10 +121,10 @@ export default function RegisterForm() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>姓名</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="请输入您的姓名"
+                        placeholder="Enter your name"
                         {...field}
                         disabled={isPending}
                       />
@@ -138,7 +138,7 @@ export default function RegisterForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>邮箱</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="example@mail.com"
@@ -155,10 +155,10 @@ export default function RegisterForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>密码</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <PasswordInput
-                        placeholder="请输入密码"
+                        placeholder="Enter your password"
                         type="password"
                         {...field}
                         disabled={isPending}
@@ -173,10 +173,10 @@ export default function RegisterForm() {
               {isPending ? (
                 <div className="flex items-center justify-center gap-1">
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  <span>注册中...</span>
+                  <span>Signing up...</span>
                 </div>
               ) : (
-                "创建账户"
+                "Create Account"
               )}
             </Button>
           </form>
@@ -185,7 +185,7 @@ export default function RegisterForm() {
       <div className="text-center">
         <Link href="/login" className="w-full">
           <Button variant="outline" className="w-full">
-            返回登录
+            Back to Login
           </Button>
         </Link>
       </div>

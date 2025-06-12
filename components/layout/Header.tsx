@@ -21,7 +21,7 @@ export function Header() {
   const { user, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
-  // 避免hydration不匹配
+  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -34,7 +34,7 @@ export function Header() {
     try {
       await authClient.signOut();
     } catch (error) {
-      console.error("登出失败:", error);
+      console.error("Sign out failed:", error);
     }
   };
 
@@ -76,10 +76,10 @@ export function Header() {
             <button
               onClick={toggleTheme}
               className="p-2 hover:bg-gray-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 group"
-              aria-label="切换主题"
+              aria-label="Toggle theme"
             >
               {theme === "dark" ? (
-                // 太阳图标 (浅色模式)
+                // Sun icon (light mode)
                 <svg
                   className="w-5 h-5 text-gray-600 dark:text-slate-300 group-hover:text-primary dark:group-hover:text-yellow-400 transition-colors duration-200"
                   fill="none"
@@ -94,7 +94,7 @@ export function Header() {
                   />
                 </svg>
               ) : (
-                // 月亮图标 (深色模式)
+                // Moon icon (dark mode)
                 <svg
                   className="w-5 h-5 text-gray-600 dark:text-slate-300 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors duration-200"
                   fill="none"
@@ -110,19 +110,23 @@ export function Header() {
                 </svg>
               )}
             </button>
-            
+
             {loading ? (
-              // 加载状态
+              // Loading state
               <div className="w-8 h-8 animate-pulse bg-gray-200 dark:bg-slate-700 rounded-full"></div>
             ) : user ? (
-              // 已登录状态 - 显示用户菜单
+              // Logged in state - show user menu
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.image || ""} alt={user.name} />
                       <AvatarFallback>
-                        {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase()}
+                        {user.name?.charAt(0)?.toUpperCase() ||
+                          user.email?.charAt(0)?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -130,7 +134,9 @@ export function Header() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {user.name}
+                      </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>
@@ -138,29 +144,25 @@ export function Header() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard">
-                      仪表板
-                    </Link>
+                    <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      个人资料
-                    </Link>
+                    <Link href="/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
-                    登出
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              // 未登录状态 - 显示登录按钮
+              // Not logged in state - show login button
               <div>
                 <Link
                   href="/login"
                   className="hidden md:inline-flex px-4 py-2 text-[14px] font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl dark:shadow-primary/20 dark:hover:shadow-primary/30"
                 >
-                  登录
+                  Sign In
                 </Link>
               </div>
             )}

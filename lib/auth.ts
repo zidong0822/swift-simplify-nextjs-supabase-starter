@@ -7,9 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000/api/auth",
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    "your-secret-key-here-minimum-32-characters-long",
+  secret: process.env.BETTER_AUTH_SECRET || "",
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
@@ -20,12 +18,12 @@ export const auth = betterAuth({
       const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM || "noreply@yourdomain.com",
         to: [user.email],
-        subject: "验证您的邮箱地址",
+        subject: "Verify Your Email Address",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #333;">验证您的邮箱地址</h1>
+            <h1 style="color: #333;">Verify Your Email Address</h1>
             <p style="color: #666; font-size: 16px;">
-              感谢您注册我们的服务。请点击下面的按钮来验证您的邮箱地址：
+              Thank you for registering with our service. Please click the button below to verify your email address:
             </p>
             <a 
               href="${url}" 
@@ -40,22 +38,22 @@ export const auth = betterAuth({
                 margin: 20px 0;
               "
             >
-              验证邮箱地址
+              Verify Email Address
             </a>
             <p style="color: #999; font-size: 14px;">
-              如果您无法点击按钮，请复制以下链接到浏览器地址栏：<br>
+              If you cannot click the button, please copy the following link to your browser's address bar:<br>
               <span style="word-break: break-all;">${url}</span>
             </p>
             <p style="color: #999; font-size: 14px;">
-              如果您没有注册账户，请忽略此邮件。
+              If you did not create an account, please ignore this email.
             </p>
           </div>
         `,
       });
 
       if (error) {
-        console.error("邮件发送失败:", error);
-        throw new Error("邮件发送失败");
+        console.error("Email sending failed:", error);
+        throw new Error("Email sending failed");
       }
     },
   },
@@ -82,12 +80,12 @@ export const auth = betterAuth({
         const { error } = await resend.emails.send({
           from: process.env.EMAIL_FROM || "noreply@yourdomain.com",
           to: [newEmail],
-          subject: "确认邮箱地址变更",
+          subject: "Confirm Email Address Change",
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #333;">确认邮箱地址变更</h1>
+              <h1 style="color: #333;">Confirm Email Address Change</h1>
               <p style="color: #666; font-size: 16px;">
-                您请求将邮箱地址更改为 ${newEmail}。请点击下面的按钮确认此更改：
+                You have requested to change your email address to ${newEmail}. Please click the button below to confirm this change:
               </p>
               <a 
                 href="${url}" 
@@ -102,25 +100,25 @@ export const auth = betterAuth({
                   margin: 20px 0;
                 "
               >
-                确认邮箱变更
+                Confirm Email Change
               </a>
               <p style="color: #999; font-size: 14px;">
-                如果您没有请求此更改，请忽略此邮件。
+                If you did not request this change, please ignore this email.
               </p>
             </div>
           `,
         });
 
         if (error) {
-          console.error("邮件发送失败:", error);
-          throw new Error("邮件发送失败");
+          console.error("Email sending failed:", error);
+          throw new Error("Email sending failed");
         }
       },
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7天
-    updateAge: 60 * 60 * 24, // 1天
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // 1 day
   },
   plugins: [nextCookies()],
 });

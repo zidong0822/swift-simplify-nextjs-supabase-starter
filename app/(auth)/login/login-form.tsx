@@ -23,13 +23,13 @@ import { authClient } from "@/lib/auth-client";
 
 const loginSchema = z.object({
   email: z
-    .string({ required_error: "邮箱是必填项" })
-    .email({ message: "邮箱格式无效" })
+    .string({ required_error: "Email is required" })
+    .email({ message: "Invalid email format" })
     .min(5),
   password: z
     .string()
-    .min(8, { message: "密码至少需要8个字符" })
-    .regex(/\d/, { message: "密码必须包含至少一个数字" }),
+    .min(8, { message: "Password must be at least 8 characters" })
+    .regex(/\d/, { message: "Password must contain at least one number" }),
 });
 
 export default function LoginForm() {
@@ -55,14 +55,14 @@ export default function LoginForm() {
         });
 
         if (error) {
-          toast.error("登录失败：" + error.message);
+          toast.error("Login failed: " + error.message);
           return;
         }
 
         router.push(redirectTo);
-        toast.success("欢迎回来！");
+        toast.success("Welcome back!");
       } catch {
-        toast.error("登录时发生错误");
+        toast.error("An error occurred during login");
       }
     });
   }
@@ -75,7 +75,7 @@ export default function LoginForm() {
           callbackURL: redirectTo,
         });
       } catch {
-        toast.error(`${provider} 登录失败`);
+        toast.error(`${provider} login failed`);
       }
     });
   }
@@ -90,7 +90,7 @@ export default function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>邮箱</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="example@mail.com"
@@ -107,10 +107,10 @@ export default function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>密码</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <PasswordInput
-                      placeholder="密码"
+                      placeholder="Password"
                       {...field}
                       disabled={isPending}
                     />
@@ -124,10 +124,10 @@ export default function LoginForm() {
             {isPending ? (
               <div className="flex items-center justify-center gap-1">
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                <span>验证中...</span>
+                <span>Verifying...</span>
               </div>
             ) : (
-              "立即登录"
+              "Sign In"
             )}
           </Button>
         </form>
@@ -137,11 +137,11 @@ export default function LoginForm() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">或</span>
+          <span className="bg-background px-2 text-muted-foreground">OR</span>
         </div>
       </div>
       <Button variant="outline" asChild>
-        <Link href="/register">创建账户</Link>
+        <Link href="/register">Create Account</Link>
       </Button>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -149,13 +149,13 @@ export default function LoginForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            社交登录
+            Social Login
           </span>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-6">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           disabled={isPending}
           onClick={() => handleSocialLogin("google")}
         >
@@ -166,8 +166,8 @@ export default function LoginForm() {
           )}{" "}
           Google
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           disabled={isPending}
           onClick={() => handleSocialLogin("github")}
         >
