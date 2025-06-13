@@ -5,6 +5,9 @@ import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+// 强制动态渲染，因为页面使用了 headers() API
+export const dynamic = 'force-dynamic';
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100 dark:bg-gray-900">

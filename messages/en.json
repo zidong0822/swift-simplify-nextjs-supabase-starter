@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "features": "Features",
+    "forWho": "For Who", 
+    "reviews": "Reviews",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "signIn": "Sign In",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "signOut": "Sign Out"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "welcome": "Welcome",
+    "language": "Language",
+    "toggleTheme": "Toggle theme"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember me",
+    "loginError": "Invalid email or password",
+    "signupSuccess": "Account created successfully",
+    "signInTitle": "Sign In",
+    "signUpTitle": "Sign Up",
+    "confirmPassword": "Confirm Password",
+    "signInButton": "Sign In",
+    "signUpButton": "Sign Up",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "invalidCredentials": "Invalid credentials",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required"
+  }
+} 

@@ -1,43 +1,53 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-// 指定使用 Node.js runtime 而不是 Edge runtime
-export const runtime = 'nodejs'
+// 不需要认证的公共路由
+const publicRoutes = [
+  '/',
+  '/login',
+  '/register',
+  '/error',
+  '/i18n-demo'
+];
 
 export async function middleware(request: NextRequest) {
-  // 跳过 Better Auth 的 API 路由
-  if (request.nextUrl.pathname.startsWith('/api/auth')) {
-    return;
-  }
+  const pathname = request.nextUrl.pathname;
 
-  // 跳过静态文件和公共路由
+  // 跳过静态文件和 API 路由
   if (
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.startsWith('/favicon.ico') ||
-    request.nextUrl.pathname === '/' ||
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/register') ||
-    request.nextUrl.pathname.startsWith('/error')
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp)$/)
   ) {
-    return;
+    return NextResponse.next();
   }
 
+  // 检查是否是公共路由
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  );
+
+  if (isPublicRoute) {
+    // 对于公共路由，直接通过
+    return NextResponse.next();
+  }
+
+  // 对于受保护的路由，检查认证
   try {
-    // 检查是否有认证cookie
-    const authCookie = request.cookies.get('better-auth.session_token');
-    
-    // 如果没有认证cookie，直接重定向
+    const authCookie = request.cookies.get("better-auth.session_token");
+
     if (!authCookie) {
       const redirectUrl = new URL("/login", request.url);
-      redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+      redirectUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // 如果有cookie，让请求继续（实际的会话验证会在页面组件中进行）
+    // 认证通过，继续处理请求
     return NextResponse.next();
   } catch (error) {
     console.error("认证检查失败:", error);
     const redirectUrl = new URL("/login", request.url);
-    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    redirectUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 }
@@ -48,10 +58,9 @@ export const config = {
      * Match all request paths except for the ones starting with:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - api/auth (Better Auth routes)
-     * Feel free to modify this pattern to include more paths.
+     * - favicon.ico (favicon file) 
+     * - api (API routes)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/auth|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api).*)",
   ],
 };

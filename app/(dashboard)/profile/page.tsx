@@ -5,6 +5,9 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+// 强制动态渲染，因为页面使用了 headers() API
+export const dynamic = 'force-dynamic';
+
 export default async function ProfilePage() {
   try {
     const session = await auth.api.getSession({

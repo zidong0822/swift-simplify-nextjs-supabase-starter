@@ -1,5 +1,8 @@
 "use client";
 
+// 强制动态渲染，因为使用了 i18n cookies
+export const dynamic = 'force-dynamic';
+
 import { 
   Header,
   Hero,

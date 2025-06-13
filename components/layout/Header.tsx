@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/lib/auth-context";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -15,11 +16,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LanguageSwitcher from "@/components/language-switcher";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { user, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
+  
+  // 翻译 hooks
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -40,6 +46,15 @@ export function Header() {
 
   if (!mounted) return null;
 
+  // 导航菜单项
+  const navItems = [
+    { href: "#features", textKey: "features" },
+    { href: "#target-users", textKey: "forWho" },
+    { href: "#testimonials", textKey: "reviews" },
+    { href: "#pricing", textKey: "pricing" },
+    { href: "#faq", textKey: "faq" },
+  ];
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center bg-transparent">
       <header className="w-full max-w-7xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-b border-gray-200/20 dark:border-slate-700/50 rounded-b-2xl shadow-[0_4px_18px_0px_rgba(15,20,34,0.1)] dark:shadow-[0_8px_32px_0px_rgba(0,0,0,0.4)]">
@@ -53,19 +68,13 @@ export function Header() {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            {[
-              { href: "#features", text: "Features" },
-              { href: "#target-users", text: "For Who" },
-              { href: "#testimonials", text: "Reviews" },
-              { href: "#pricing", text: "Pricing" },
-              { href: "#faq", text: "FAQ" },
-            ].map((item) => (
+            {navItems.map((item) => (
               <div key={item.href}>
                 <Link
                   href={item.href}
                   className="text-[14px] font-medium text-gray-600 hover:text-primary transition-colors duration-200 dark:text-slate-300 dark:hover:text-primary relative group"
                 >
-                  {item.text}
+                  {t(item.textKey)}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
                 </Link>
               </div>
@@ -73,10 +82,13 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* 语言切换器 */}
+            <LanguageSwitcher />
+
             <button
               onClick={toggleTheme}
               className="p-2 hover:bg-gray-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 group"
-              aria-label="Toggle theme"
+              aria-label={tCommon('toggleTheme')}
             >
               {theme === "dark" ? (
                 // Sun icon (light mode)
@@ -144,14 +156,14 @@ export function Header() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
+                    <Link href="/dashboard">{t('dashboard')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
+                    <Link href="/profile">{t('profile')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
-                    Sign Out
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -162,7 +174,7 @@ export function Header() {
                   href="/login"
                   className="hidden md:inline-flex px-4 py-2 text-[14px] font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl dark:shadow-primary/20 dark:hover:shadow-primary/30"
                 >
-                  Sign In
+                  {t('signIn')}
                 </Link>
               </div>
             )}
