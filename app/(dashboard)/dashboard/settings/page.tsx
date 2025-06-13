@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -9,59 +11,56 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Palette, User } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">设置</h1>
-        <p className="text-muted-foreground">管理您的账户设置和偏好</p>
+    <div className="space-y-4 md:space-y-6">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:gap-6">
         {/* 账户设置 */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              账户设置
+              {t("accountSettings")}
             </CardTitle>
-            <CardDescription>管理您的基本账户信息</CardDescription>
+            <CardDescription>{t("accountSettingsDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">编辑个人资料</p>
-                <p className="text-sm text-muted-foreground">
-                  更新您的姓名、头像等信息
-                </p>
+                <p className="font-medium">{t("editProfile")}</p>
+                <p className="text-sm text-muted-foreground">{t("editProfileDesc")}</p>
               </div>
-              <Button variant="outline" size="sm">
-                编辑
+              <Button variant="outline" className="w-full sm:w-auto">
+                {t("modify")}
               </Button>
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">邮箱地址</p>
-                <p className="text-sm text-muted-foreground">
-                  更改您的邮箱地址
-                </p>
+                <p className="font-medium">{t("emailAddress")}</p>
+                <p className="text-sm text-muted-foreground">{t("emailAddressDesc")}</p>
               </div>
-              <Button variant="outline" size="sm">
-                修改
+              <Button variant="outline" className="w-full sm:w-auto">
+                {t("modify")}
               </Button>
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">密码</p>
-                <p className="text-sm text-muted-foreground">
-                  更改您的登录密码
-                </p>
+                <p className="font-medium">{t("password")}</p>
+                <p className="text-sm text-muted-foreground">{t("passwordDesc")}</p>
               </div>
-              <Button variant="outline" size="sm">
-                修改密码
+              <Button variant="outline" className="w-full sm:w-auto">
+                {t("changePassword")}
               </Button>
             </div>
           </CardContent>
@@ -72,29 +71,29 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
-              界面设置
+              {t("interfaceSettings")}
             </CardTitle>
-            <CardDescription>自定义您的使用体验</CardDescription>
+            <CardDescription>{t("interfaceSettingsDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">主题模式</p>
-                <p className="text-sm text-muted-foreground">
-                  选择浅色或深色主题
-                </p>
+                <p className="font-medium">{t("themeMode")}</p>
+                <p className="text-sm text-muted-foreground">{t("themeModeDesc")}</p>
               </div>
-              <Badge variant="outline">跟随系统</Badge>
+              <div className="flex gap-2">
+                <Badge variant="outline">{t("followSystem")}</Badge>
+              </div>
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">语言</p>
-                <p className="text-sm text-muted-foreground">
-                  选择界面显示语言
-                </p>
+                <p className="font-medium">{t("language")}</p>
+                <p className="text-sm text-muted-foreground">{t("languageDesc")}</p>
               </div>
-              <Badge variant="outline">中文</Badge>
+              <div className="flex gap-2">
+                <Badge variant="outline">{t("chinese")}</Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -102,19 +101,17 @@ export default function SettingsPage() {
         {/* 危险操作 */}
         <Card className="border-red-200 dark:border-red-800">
           <CardHeader>
-            <CardTitle className="text-red-600">危险操作</CardTitle>
-            <CardDescription>这些操作不可逆转，请谨慎操作</CardDescription>
+            <CardTitle className="text-red-600">{t("dangerousOperations")}</CardTitle>
+            <CardDescription>{t("dangerousOperationsDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <p className="font-medium">删除账户</p>
-                <p className="text-sm text-muted-foreground">
-                  永久删除您的账户和所有数据
-                </p>
+                <p className="font-medium">{t("deleteAccount")}</p>
+                <p className="text-sm text-muted-foreground">{t("deleteAccountDesc")}</p>
               </div>
-              <Button variant="destructive" size="sm">
-                删除账户
+              <Button variant="destructive" className="w-full sm:w-auto">
+                {t("deleteAccount")}
               </Button>
             </div>
           </CardContent>

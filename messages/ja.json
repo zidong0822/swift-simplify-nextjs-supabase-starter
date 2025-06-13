@@ -1,13 +1,14 @@
 {
   "nav": {
     "features": "機能",
-    "forWho": "対象ユーザー", 
+    "forWho": "対象ユーザー",
     "reviews": "レビュー",
     "pricing": "料金プラン",
     "faq": "よくある質問",
     "signIn": "ログイン",
     "dashboard": "ダッシュボード",
     "profile": "プロフィール",
+    "settings": "設定",
     "signOut": "ログアウト"
   },
   "navigation": {
@@ -27,7 +28,9 @@
     "confirm": "確認",
     "welcome": "ようこそ",
     "language": "言語",
-    "toggleTheme": "テーマ切替"
+    "toggleTheme": "テーマ切替",
+    "reload": "再読み込み",
+    "version": "バージョン"
   },
   "auth": {
     "login": "ログイン",
@@ -53,6 +56,87 @@
     "tryAgain": "再試行",
     "invalidCredentials": "認証情報が無効です",
     "emailRequired": "メールアドレスは必須です",
-    "passwordRequired": "パスワードは必須です"
+    "passwordRequired": "パスワードは必須です",
+    "accessDenied": "アクセス拒否",
+    "loadingFailed": "読み込み失敗",
+    "needLogin": "プロフィールを表示するにはログインが必要です",
+    "loadDataError": "ユーザー情報の取得中にエラーが発生しました。しばらくしてから再試行してください",
+    "getUserDataFailed": "ユーザーデータの取得に失敗しました",
+    "loadDashboardDataFailed": "ダッシュボードデータの読み込みに失敗しました",
+    "cannotLoadUserInfo": "ユーザー情報を読み込めません",
+    "loadDataProblem": "データの読み込み中に問題が発生しました"
+  },
+  "dashboard": {
+    "title": "ダッシュボード概要",
+    "subtitle": "パーソナルセンターへようこそ",
+    "overview": "概要",
+    "userInfo": "ユーザー情報",
+    "emailStatus": "メールステータス",
+    "registrationDate": "登録日",
+    "accountType": "アカウントタイプ",
+    "verified": "認証済み",
+    "unverified": "未認証",
+    "emailVerified": "メールが認証されました",
+    "emailNotVerified": "メールを認証してください",
+    "accountCreationDate": "アカウント作成日",
+    "currentPlan": "現在のサブスクリプションプラン",
+    "freeVersion": "無料版",
+    "quickActions": "クイックアクション",
+    "quickActionsDesc": "よく使う機能への素早いアクセス",
+    "editProfile": "プロフィール編集",
+    "notSet": "未設定"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "subtitle": "アカウント情報を管理",
+    "personalInfo": "個人情報",
+    "personalInfoDesc": "基本的なアカウント情報",
+    "accountDetails": "アカウント詳細",
+    "accountDetailsDesc": "基本的なアカウント情報",
+    "dangerousOperations": "危険な操作",
+    "dangerousOperationsDesc": "この操作は元に戻せません。慎重に行ってください",
+    "editProfileButton": "プロフィール編集",
+    "nameNotSet": "名前が設定されていません",
+    "standardUser": "標準ユーザー",
+    "userId": "ユーザーID",
+    "registrationTime": "登録時間",
+    "emailStatus": "メールステータス",
+    "emailVerified": "メール認証済み",
+    "emailNotVerified": "メール未認証",
+    "deleteAccount": "アカウント削除",
+    "deleteAccountDesc": "アカウントとすべてのデータを完全に削除"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "アカウント設定と設定を管理",
+    "accountSettings": "アカウント設定",
+    "accountSettingsDesc": "基本的なアカウント情報を管理",
+    "interfaceSettings": "インターフェース設定",
+    "interfaceSettingsDesc": "ユーザーエクスペリエンスをカスタマイズ",
+    "dangerousOperations": "危険な操作",
+    "dangerousOperationsDesc": "これらの操作は元に戻せません。慎重に行ってください",
+    "editProfile": "プロフィール編集",
+    "editProfileDesc": "名前、アバターなどの情報を更新",
+    "emailAddress": "メールアドレス",
+    "emailAddressDesc": "メールアドレスを変更",
+    "password": "パスワード",
+    "passwordDesc": "ログインパスワードを変更",
+    "changePassword": "パスワード変更",
+    "themeMode": "テーマモード",
+    "themeModeDesc": "ライトまたはダークテーマを選択",
+    "language": "言語",
+    "languageDesc": "インターフェース表示言語を選択",
+    "followSystem": "システムに従う",
+    "chinese": "中国語",
+    "deleteAccount": "アカウント削除",
+    "deleteAccountDesc": "アカウントとすべてのデータを完全に削除",
+    "modify": "変更"
+  },
+  "sidebar": {
+    "application": "アプリケーション",
+    "overview": "概要",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "signOut": "ログアウト"
   }
-} 
+}

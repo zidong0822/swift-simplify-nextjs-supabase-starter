@@ -1,13 +1,14 @@
 {
   "nav": {
     "features": "功能特性",
-    "forWho": "适用对象", 
+    "forWho": "适用对象",
     "reviews": "用户评价",
     "pricing": "价格方案",
     "faq": "常见问题",
     "signIn": "登录",
     "dashboard": "仪表板",
     "profile": "个人资料",
+    "settings": "设置",
     "signOut": "退出登录"
   },
   "navigation": {
@@ -27,7 +28,9 @@
     "confirm": "确认",
     "welcome": "欢迎",
     "language": "语言",
-    "toggleTheme": "切换主题"
+    "toggleTheme": "切换主题",
+    "reload": "重新加载",
+    "version": "版本"
   },
   "auth": {
     "login": "登录",
@@ -53,6 +56,87 @@
     "tryAgain": "重试",
     "invalidCredentials": "凭证无效",
     "emailRequired": "邮箱必填",
-    "passwordRequired": "密码必填"
+    "passwordRequired": "密码必填",
+    "accessDenied": "访问被拒绝",
+    "loadingFailed": "加载失败",
+    "needLogin": "您需要登录才能查看个人资料",
+    "loadDataError": "获取用户信息时出现问题，请稍后重试",
+    "getUserDataFailed": "获取用户数据失败",
+    "loadDashboardDataFailed": "获取仪表板数据失败",
+    "cannotLoadUserInfo": "无法加载用户信息",
+    "loadDataProblem": "加载数据时出现问题"
+  },
+  "dashboard": {
+    "title": "仪表板概览",
+    "subtitle": "欢迎回到您的个人中心",
+    "overview": "概览",
+    "userInfo": "用户信息",
+    "emailStatus": "邮箱状态",
+    "registrationDate": "注册时间",
+    "accountType": "账户类型",
+    "verified": "已验证",
+    "unverified": "未验证",
+    "emailVerified": "邮箱已通过验证",
+    "emailNotVerified": "请验证您的邮箱",
+    "accountCreationDate": "账户创建日期",
+    "currentPlan": "当前订阅计划",
+    "freeVersion": "免费版",
+    "quickActions": "快速操作",
+    "quickActionsDesc": "常用功能快速入口",
+    "editProfile": "编辑个人资料",
+    "notSet": "未设置"
+  },
+  "profile": {
+    "title": "个人资料",
+    "subtitle": "管理您的账户信息",
+    "personalInfo": "个人信息",
+    "personalInfoDesc": "您的基本账户信息",
+    "accountDetails": "账户详情",
+    "accountDetailsDesc": "您的账户基本信息",
+    "dangerousOperations": "危险操作",
+    "dangerousOperationsDesc": "此操作不可逆转，请谨慎操作",
+    "editProfileButton": "编辑资料",
+    "nameNotSet": "未设置姓名",
+    "standardUser": "标准用户",
+    "userId": "用户ID",
+    "registrationTime": "注册时间",
+    "emailStatus": "邮箱状态",
+    "emailVerified": "邮箱已验证",
+    "emailNotVerified": "邮箱未验证",
+    "deleteAccount": "删除账户",
+    "deleteAccountDesc": "永久删除您的账户和所有数据"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "管理您的账户设置和偏好",
+    "accountSettings": "账户设置",
+    "accountSettingsDesc": "管理您的基本账户信息",
+    "interfaceSettings": "界面设置",
+    "interfaceSettingsDesc": "自定义您的使用体验",
+    "dangerousOperations": "危险操作",
+    "dangerousOperationsDesc": "这些操作不可逆转，请谨慎操作",
+    "editProfile": "编辑个人资料",
+    "editProfileDesc": "更新您的姓名、头像等信息",
+    "emailAddress": "邮箱地址",
+    "emailAddressDesc": "更改您的邮箱地址",
+    "password": "密码",
+    "passwordDesc": "更改您的登录密码",
+    "changePassword": "修改密码",
+    "themeMode": "主题模式",
+    "themeModeDesc": "选择浅色或深色主题",
+    "language": "语言",
+    "languageDesc": "选择界面显示语言",
+    "followSystem": "跟随系统",
+    "chinese": "中文",
+    "deleteAccount": "删除账户",
+    "deleteAccountDesc": "永久删除您的账户和所有数据",
+    "modify": "修改"
+  },
+  "sidebar": {
+    "application": "应用",
+    "overview": "概览",
+    "profile": "个人资料",
+    "settings": "设置",
+    "signOut": "退出登录"
   }
-} 
+}

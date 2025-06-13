@@ -95,13 +95,7 @@ const Posts = () => {
 
   if (isLoading) return <div>加载中...</div>;
 
-  return (
-    <ul>
-      {data?.map((post) => (
-        <li key={post.id}>{post.title}</li>
-      ))}
-    </ul>
-  );
+  return <ul>{data?.map((post) => <li key={post.id}>{post.title}</li>)}</ul>;
 };
 ```
 

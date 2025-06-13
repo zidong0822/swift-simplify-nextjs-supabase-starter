@@ -1,13 +1,14 @@
 {
   "nav": {
     "features": "Features",
-    "forWho": "For Who", 
+    "forWho": "For Who",
     "reviews": "Reviews",
     "pricing": "Pricing",
     "faq": "FAQ",
     "signIn": "Sign In",
     "dashboard": "Dashboard",
     "profile": "Profile",
+    "settings": "Settings",
     "signOut": "Sign Out"
   },
   "navigation": {
@@ -27,7 +28,9 @@
     "confirm": "Confirm",
     "welcome": "Welcome",
     "language": "Language",
-    "toggleTheme": "Toggle theme"
+    "toggleTheme": "Toggle theme",
+    "reload": "Reload",
+    "version": "Version"
   },
   "auth": {
     "login": "Login",
@@ -53,6 +56,87 @@
     "tryAgain": "Try again",
     "invalidCredentials": "Invalid credentials",
     "emailRequired": "Email is required",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "accessDenied": "Access Denied",
+    "loadingFailed": "Loading Failed",
+    "needLogin": "You need to login to view your profile",
+    "loadDataError": "An error occurred while retrieving user information, please try again later",
+    "getUserDataFailed": "Failed to get user data",
+    "loadDashboardDataFailed": "Failed to load dashboard data",
+    "cannotLoadUserInfo": "Cannot load user information",
+    "loadDataProblem": "A problem occurred while loading data"
+  },
+  "dashboard": {
+    "title": "Dashboard Overview",
+    "subtitle": "Welcome back to your personal center",
+    "overview": "Overview",
+    "userInfo": "User Information",
+    "emailStatus": "Email Status",
+    "registrationDate": "Registration Date",
+    "accountType": "Account Type",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "emailVerified": "Email has been verified",
+    "emailNotVerified": "Please verify your email",
+    "accountCreationDate": "Account creation date",
+    "currentPlan": "Current subscription plan",
+    "freeVersion": "Free Version",
+    "quickActions": "Quick Actions",
+    "quickActionsDesc": "Quick access to common functions",
+    "editProfile": "Edit Profile",
+    "notSet": "Not Set"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account information",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "Your basic account information",
+    "accountDetails": "Account Details",
+    "accountDetailsDesc": "Your basic account information",
+    "dangerousOperations": "Dangerous Operations",
+    "dangerousOperationsDesc": "This operation is irreversible, please proceed with caution",
+    "editProfileButton": "Edit Profile",
+    "nameNotSet": "Name not set",
+    "standardUser": "Standard User",
+    "userId": "User ID",
+    "registrationTime": "Registration Time",
+    "emailStatus": "Email Status",
+    "emailVerified": "Email verified",
+    "emailNotVerified": "Email not verified",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDesc": "Permanently delete your account and all data"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "accountSettings": "Account Settings",
+    "accountSettingsDesc": "Manage your basic account information",
+    "interfaceSettings": "Interface Settings",
+    "interfaceSettingsDesc": "Customize your user experience",
+    "dangerousOperations": "Dangerous Operations",
+    "dangerousOperationsDesc": "These operations are irreversible, please proceed with caution",
+    "editProfile": "Edit Profile",
+    "editProfileDesc": "Update your name, avatar and other information",
+    "emailAddress": "Email Address",
+    "emailAddressDesc": "Change your email address",
+    "password": "Password",
+    "passwordDesc": "Change your login password",
+    "changePassword": "Change Password",
+    "themeMode": "Theme Mode",
+    "themeModeDesc": "Choose light or dark theme",
+    "language": "Language",
+    "languageDesc": "Select interface display language",
+    "followSystem": "Follow System",
+    "chinese": "Chinese",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDesc": "Permanently delete your account and all data",
+    "modify": "Modify"
+  },
+  "sidebar": {
+    "application": "Application",
+    "overview": "Overview",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign Out"
   }
-} 
+}
