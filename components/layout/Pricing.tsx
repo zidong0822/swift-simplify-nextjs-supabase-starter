@@ -1,7 +1,9 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Button } from "@/components/ui/button";
+import { useStripe } from "@/hooks/useStripe";
+import { toast } from "sonner";
+import { PricingPlan } from "@/types/stripe";
 
 const checkIcon = (
   <svg
@@ -17,53 +19,80 @@ const checkIcon = (
       d="M5 13l4 4L19 7"
     />
   </svg>
-)
+);
 
-const plans = [
+const plans: PricingPlan[] = [
   {
-    name: 'Free',
-    price: '$0',
-    description: 'Perfect for personal projects',
+    name: "Free",
+    price: "$0",
+    description: "Perfect for personal projects",
     features: [
-      'Full access to starter template',
-      'Community support',
-      'MIT license'
+      "Full access to starter template",
+      "Community support",
+      "MIT license",
     ],
-    buttonText: 'Get Started',
-    buttonVariant: 'outline' as const,
-    popular: false
+    buttonText: "Get Started",
+    buttonVariant: "outline" as const,
+    popular: false,
+    priceId: null, // 免费计划不需要Stripe价格ID
+    isFree: true,
   },
   {
-    name: 'Pro',
-    price: '$49',
-    description: 'For professional developers',
+    name: "Pro",
+    price: "$49",
+    description: "For professional developers",
     features: [
-      'Everything in Free',
-      'Premium extensions',
-      'Priority support',
-      'Advanced components'
+      "Everything in Free",
+      "Premium extensions",
+      "Priority support",
+      "Advanced components",
     ],
-    buttonText: 'Get Started',
-    buttonVariant: 'default' as const,
-    popular: true
+    buttonText: "Subscribe Now",
+    buttonVariant: "default" as const,
+    popular: true,
+    priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg", // 替换为您的实际Stripe价格ID
+    isFree: false,
   },
   {
-    name: 'Enterprise',
-    price: '$199',
-    description: 'For teams and businesses',
+    name: "Enterprise",
+    price: "$199",
+    description: "For teams and businesses",
     features: [
-      'Everything in Pro',
-      'Custom integrations',
-      'Dedicated support',
-      'Team collaboration tools'
+      "Everything in Pro",
+      "Custom integrations",
+      "Dedicated support",
+      "Team collaboration tools",
     ],
-    buttonText: 'Contact Sales',
-    buttonVariant: 'outline' as const,
-    popular: false
-  }
-]
+    buttonText: "Subscribe Now",
+    buttonVariant: "outline" as const,
+    popular: false,
+    priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg", // 替换为您的实际Stripe价格ID
+    isFree: false,
+  },
+];
 
 export default function Pricing() {
+  const { redirectToCheckout, loading } = useStripe();
+
+  const handleSubscribe = async (plan: PricingPlan) => {
+    if (plan.isFree) {
+      // 处理免费计划逻辑
+      toast.success("欢迎使用免费计划！");
+      return;
+    }
+
+    if (!plan.priceId) {
+      toast.error("价格配置错误，请联系客服");
+      return;
+    }
+
+    try {
+      await redirectToCheckout(plan.priceId);
+    } catch {
+      toast.error("支付初始化失败，请重试");
+    }
+  };
+
   return (
     <section
       id="pricing"
@@ -83,8 +112,8 @@ export default function Pricing() {
               key={plan.name}
               className={`bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg flex flex-col relative ${
                 plan.popular
-                  ? 'border-2 border-primary'
-                  : 'border border-gray-200 dark:border-gray-700'
+                  ? "border-2 border-primary"
+                  : "border border-gray-200 dark:border-gray-700"
               }`}
             >
               {plan.popular && (
@@ -105,13 +134,18 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button variant={plan.buttonVariant} asChild className="w-full">
-                <Link href="#get-started">{plan.buttonText}</Link>
+              <Button
+                variant={plan.buttonVariant}
+                className="w-full"
+                onClick={() => handleSubscribe(plan)}
+                disabled={loading}
+              >
+                {loading ? "处理中..." : plan.buttonText}
               </Button>
             </div>
           ))}
         </div>
       </div>
     </section>
-  )
-} 
+  );
+}

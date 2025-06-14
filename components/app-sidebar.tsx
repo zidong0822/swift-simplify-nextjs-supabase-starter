@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3, Settings, User, LogOut, ChevronUp } from "lucide-react";
+import { BarChart3, Settings, User, LogOut, ChevronUp, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -47,6 +47,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       title: t("overview"),
       url: "/dashboard",
       icon: BarChart3,
+    },
+    {
+      title: "账单管理",
+      url: "/dashboard/billing",
+      icon: CreditCard,
     },
     {
       title: t("profile"),
@@ -127,6 +132,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                   <Link href="/profile" className="flex items-center">
                     <User className="mr-2 h-4 w-4" />
                     {tNav("profile")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/billing" className="flex items-center">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    账单管理
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
