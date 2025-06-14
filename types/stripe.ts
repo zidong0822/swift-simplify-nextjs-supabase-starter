@@ -8,6 +8,7 @@ export interface PricingPlan {
   popular: boolean
   priceId: string | null
   isFree: boolean
+  isSubscription?: boolean // 是否为订阅计划
 }
 
 export interface CheckoutSessionRequest {

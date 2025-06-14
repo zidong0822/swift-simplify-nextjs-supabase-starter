@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useStripe } from "@/hooks/useStripe";
+import { useUserPurchases } from "@/hooks/useUserPurchases";
+import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { PricingPlan } from "@/types/stripe";
 
@@ -36,6 +38,7 @@ const plans: PricingPlan[] = [
     popular: false,
     priceId: null, // 免费计划不需要Stripe价格ID
     isFree: true,
+    isSubscription: false,
   },
   {
     name: "Pro",
@@ -52,6 +55,7 @@ const plans: PricingPlan[] = [
     popular: true,
     priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg", // 替换为您的实际Stripe价格ID
     isFree: false,
+    isSubscription: true, // 这是订阅计划
   },
   {
     name: "Enterprise",
@@ -68,11 +72,19 @@ const plans: PricingPlan[] = [
     popular: false,
     priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg", // 替换为您的实际Stripe价格ID
     isFree: false,
+    isSubscription: true, // 这是订阅计划
   },
 ];
 
 export default function Pricing() {
+  const { user } = useAuth();
   const { redirectToCheckout, loading } = useStripe();
+  const { 
+    canPurchase, 
+    hasActiveSubscription, 
+    hasPurchased, 
+    loading: purchasesLoading 
+  } = useUserPurchases();
 
   const handleSubscribe = async (plan: PricingPlan) => {
     if (plan.isFree) {
@@ -81,8 +93,20 @@ export default function Pricing() {
       return;
     }
 
+    if (!user) {
+      toast.error("请先登录");
+      return;
+    }
+
     if (!plan.priceId) {
       toast.error("价格配置错误，请联系客服");
+      return;
+    }
+
+    // 检查是否可以购买
+    const purchaseCheck = canPurchase(plan.name, plan.isSubscription || false);
+    if (!purchaseCheck.canPurchase) {
+      toast.error(purchaseCheck.reason || "无法购买此计划");
       return;
     }
 
@@ -91,6 +115,64 @@ export default function Pricing() {
     } catch {
       toast.error("支付初始化失败，请重试");
     }
+  };
+
+  // 获取按钮文本和状态
+  const getButtonProps = (plan: PricingPlan) => {
+    if (plan.isFree) {
+      return {
+        text: plan.buttonText,
+        disabled: false,
+        variant: plan.buttonVariant,
+      };
+    }
+
+    if (!user) {
+      return {
+        text: "登录后购买",
+        disabled: false,
+        variant: plan.buttonVariant,
+      };
+    }
+
+    if (purchasesLoading) {
+      return {
+        text: "检查中...",
+        disabled: true,
+        variant: plan.buttonVariant,
+      };
+    }
+
+    // 检查是否已购买或订阅
+    if (hasActiveSubscription(plan.name)) {
+      return {
+        text: "已订阅",
+        disabled: true,
+        variant: "outline" as const,
+      };
+    }
+
+    if (hasPurchased(plan.name)) {
+      return {
+        text: "已购买",
+        disabled: true,
+        variant: "outline" as const,
+      };
+    }
+
+    if (hasActiveSubscription()) {
+      return {
+        text: "已有订阅",
+        disabled: true,
+        variant: "outline" as const,
+      };
+    }
+
+    return {
+      text: loading ? "处理中..." : plan.buttonText,
+      disabled: loading,
+      variant: plan.buttonVariant,
+    };
   };
 
   return (
@@ -107,43 +189,47 @@ export default function Pricing() {
         </p>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg flex flex-col relative ${
-                plan.popular
-                  ? "border-2 border-primary"
-                  : "border border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full font-medium">
-                  MOST POPULAR
-                </div>
-              )}
-              <div className="mb-5">
-                <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                <p className="text-sm text-gray-500">{plan.description}</p>
-              </div>
-              <ul className="space-y-3 mb-8 flex-grow">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    {checkIcon}
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                variant={plan.buttonVariant}
-                className="w-full"
-                onClick={() => handleSubscribe(plan)}
-                disabled={loading}
+          {plans.map((plan) => {
+            const buttonProps = getButtonProps(plan);
+            
+            return (
+              <div
+                key={plan.name}
+                className={`bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg flex flex-col relative ${
+                  plan.popular
+                    ? "border-2 border-primary"
+                    : "border border-gray-200 dark:border-gray-700"
+                }`}
               >
-                {loading ? "处理中..." : plan.buttonText}
-              </Button>
-            </div>
-          ))}
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full font-medium">
+                    MOST POPULAR
+                  </div>
+                )}
+                <div className="mb-5">
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <div className="text-4xl font-bold mb-2">{plan.price}</div>
+                  <p className="text-sm text-gray-500">{plan.description}</p>
+                </div>
+                <ul className="space-y-3 mb-8 flex-grow">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      {checkIcon}
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  variant={buttonProps.variant}
+                  className="w-full"
+                  onClick={() => handleSubscribe(plan)}
+                  disabled={buttonProps.disabled}
+                >
+                  {buttonProps.text}
+                </Button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
