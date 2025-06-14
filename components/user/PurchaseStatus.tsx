@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { PRICING_CONFIG } from "@/config/pricing";
+import { useTranslations } from "next-intl";
 
 export default function PurchaseStatus() {
   const { 
@@ -15,13 +17,15 @@ export default function PurchaseStatus() {
     hasActiveSubscription,
     hasValidPurchase 
   } = useUserPurchases();
+  
+  const t = useTranslations("billing");
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>购买状态</CardTitle>
-          <CardDescription>加载您的购买信息...</CardDescription>
+          <CardTitle>{t("purchaseStatus")}</CardTitle>
+          <CardDescription>{t("loadingPurchaseInfo")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-4 w-full" />
@@ -36,9 +40,9 @@ export default function PurchaseStatus() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>购买状态</CardTitle>
+          <CardTitle>{t("purchaseStatus")}</CardTitle>
           <CardDescription className="text-red-500">
-            加载失败: {error}
+            {t("loadingFailed")}: {error}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -64,23 +68,19 @@ export default function PurchaseStatus() {
     switch (status) {
       case 'succeeded':
       case 'active':
-        return <Badge variant="default" className="bg-green-500">成功</Badge>;
+        return <Badge variant="default" className="bg-green-500">{t("success")}</Badge>;
       case 'pending':
-        return <Badge variant="secondary">待处理</Badge>;
+        return <Badge variant="secondary">{t("pending")}</Badge>;
       case 'failed':
       case 'canceled':
-        return <Badge variant="destructive">失败</Badge>;
+        return <Badge variant="destructive">{t("failed")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return new Date(dateString).toLocaleDateString();
   };
 
   const formatAmount = (amount: number, currency: string = 'usd') => {
@@ -90,130 +90,182 @@ export default function PurchaseStatus() {
     }).format(amount / 100); // 假设金额以分为单位存储
   };
 
+  // 根据配置决定显示的统计项
+  const getStatsItems = () => {
+    const items = [];
+    
+    // 总是显示单次购买
+    if (PRICING_CONFIG.display.showOneTime) {
+      items.push({
+        value: purchases.length,
+        label: t("oneTimePurchase"),
+        color: "text-blue-600"
+      });
+    }
+    
+    // 只在配置允许时显示订阅相关信息
+    if (PRICING_CONFIG.display.showSubscription) {
+      items.push({
+        value: subscriptions.length,
+        label: t("subscriptionRecord"),
+        color: "text-green-600"
+      });
+      
+      items.push({
+        value: hasActiveSubscription() ? '1' : '0',
+        label: t("activeSubscription"),
+        color: "text-purple-600"
+      });
+    }
+    
+    return items;
+  };
+
+  // 获取状态总览的标题和描述
+  const getOverviewTitle = () => {
+    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+      return t("purchaseStatus");
+    } else if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+      return t("subscriptionStatus");
+    } else {
+      return t("purchaseStatus");
+    }
+  };
+
+  const getOverviewDescription = () => {
+    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+      return t("purchaseStatusDesc");
+    } else if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+      return t("subscriptionStatusDesc");
+    } else {
+      return t("purchaseAndSubscriptionStatus");
+    }
+  };
+
+  const statsItems = getStatsItems();
+
   return (
     <div className="space-y-6">
       {/* 总体购买状态 */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            购买状态总览
+            {getOverviewTitle()}
             {hasValidPurchase() && (
-              <Badge variant="default" className="bg-green-500">已购买</Badge>
+              <Badge variant="default" className="bg-green-500">
+                {t("purchased")}
+              </Badge>
             )}
           </CardTitle>
           <CardDescription>
-            您的购买和订阅状态概览
+            {getOverviewDescription()}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{purchases.length}</div>
-              <div className="text-sm text-gray-500">单次购买</div>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{subscriptions.length}</div>
-              <div className="text-sm text-gray-500">订阅记录</div>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {hasActiveSubscription() ? '1' : '0'}
+          <div className={`grid grid-cols-1 ${statsItems.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4`}>
+            {statsItems.map((item, index) => (
+              <div key={index} className="text-center p-4 border rounded-lg">
+                <div className={`text-2xl font-bold ${item.color}`}>{item.value}</div>
+                <div className="text-sm text-gray-500">{item.label}</div>
               </div>
-              <div className="text-sm text-gray-500">活跃订阅</div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* 订阅状态 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            订阅状态
-            {hasActiveSubscription() && (
-              <Badge variant="default" className="bg-green-500">活跃</Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            您当前的订阅计划
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {subscriptions.length === 0 ? (
-            <p className="text-gray-500">暂无订阅</p>
-          ) : (
-            <div className="space-y-4">
-              {subscriptions.map((subscription) => (
-                <div
-                  key={subscription.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(subscription.status)}
-                    <div>
-                      <p className="font-medium">{subscription.plan_name}</p>
-                      <p className="text-sm text-gray-500">
-                        到期时间: {formatDate(subscription.current_period_end)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {getStatusBadge(subscription.status)}
-                    {subscription.cancel_at_period_end && (
-                      <p className="text-xs text-orange-500 mt-1">将在期末取消</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 购买历史 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>购买历史</CardTitle>
-          <CardDescription>
-            您的所有购买记录
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {purchases.length === 0 ? (
-            <p className="text-gray-500">暂无购买记录</p>
-          ) : (
-            <div className="space-y-4">
-              {purchases.slice(0, 5).map((purchase) => (
-                <div
-                  key={purchase.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(purchase.status)}
-                    <div>
-                      <p className="font-medium">{purchase.product_name}</p>
-                      <p className="text-sm text-gray-500">
-                        {formatDate(purchase.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">
-                      {formatAmount(purchase.amount, purchase.currency)}
-                    </p>
-                    {getStatusBadge(purchase.status)}
-                  </div>
-                </div>
-              ))}
-              {purchases.length > 5 && (
-                <p className="text-sm text-gray-500 text-center">
-                  还有 {purchases.length - 5} 条记录...
-                </p>
+      {/* 订阅状态 - 只在配置允许时显示 */}
+      {PRICING_CONFIG.display.showSubscription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {t("subscriptionStatus")}
+              {hasActiveSubscription() && (
+                <Badge variant="default" className="bg-green-500">{t("active")}</Badge>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardTitle>
+            <CardDescription>
+              {t("currentSubscriptionPlan")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {subscriptions.length === 0 ? (
+              <p className="text-gray-500">{t("noSubscription")}</p>
+            ) : (
+              <div className="space-y-4">
+                {subscriptions.map((subscription) => (
+                  <div
+                    key={subscription.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(subscription.status)}
+                      <div>
+                        <p className="font-medium">{subscription.plan_name}</p>
+                        <p className="text-sm text-gray-500">
+                          {t("expiryDate")}: {formatDate(subscription.current_period_end)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {getStatusBadge(subscription.status)}
+                      {subscription.cancel_at_period_end && (
+                        <p className="text-xs text-orange-500 mt-1">{t("willCancelAtPeriodEnd")}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 购买历史 - 只在配置允许时显示 */}
+      {PRICING_CONFIG.display.showOneTime && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("purchaseHistory")}</CardTitle>
+            <CardDescription>
+              {t("purchaseHistoryDesc")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {purchases.length === 0 ? (
+              <p className="text-gray-500">{t("noPurchaseRecord")}</p>
+            ) : (
+              <div className="space-y-4">
+                {purchases.slice(0, 5).map((purchase) => (
+                  <div
+                    key={purchase.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(purchase.status)}
+                      <div>
+                        <p className="font-medium">{purchase.product_name}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(purchase.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        {formatAmount(purchase.amount, purchase.currency)}
+                      </p>
+                      {getStatusBadge(purchase.status)}
+                    </div>
+                  </div>
+                ))}
+                {purchases.length > 5 && (
+                  <p className="text-sm text-gray-500 text-center">
+                    {t("moreRecords", { count: purchases.length - 5 })}
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 } 

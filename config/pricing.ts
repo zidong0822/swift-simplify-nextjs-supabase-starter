@@ -16,7 +16,7 @@ export const PRICING_CONFIG = {
     showYearlySubscription: false,
   },
   // 默认模式
-  defaultMode: "subscription" as "onetime" | "subscription",
+  defaultMode: "onetime" as "onetime" | "subscription",
   // 模式标签
   labels: {
     onetime: "一次性购买",

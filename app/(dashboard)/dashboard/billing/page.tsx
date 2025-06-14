@@ -3,11 +3,15 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import BillingClient from "./billing-client";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getTranslations } from "next-intl/server";
 
 // 强制动态渲染
 export const dynamic = "force-dynamic";
 
 async function BillingContent() {
+  const t = await getTranslations("billing");
+  const tErrors = await getTranslations("errors");
+  
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -20,8 +24,8 @@ async function BillingContent() {
         <div className="grid gap-4 md:gap-6 grid-cols-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-red-600">错误</CardTitle>
-              <CardDescription>无法加载用户信息</CardDescription>
+              <CardTitle className="text-red-600">{tErrors("somethingWentWrong")}</CardTitle>
+              <CardDescription>{tErrors("cannotLoadUserInfo")}</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -35,8 +39,8 @@ async function BillingContent() {
       <div className="grid gap-4 md:gap-6 grid-cols-1">
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-600">加载失败</CardTitle>
-            <CardDescription>加载账单数据时出现问题</CardDescription>
+            <CardTitle className="text-red-600">{t("loadingFailed")}</CardTitle>
+            <CardDescription>{tErrors("loadDataProblem")}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -44,15 +48,17 @@ async function BillingContent() {
   }
 }
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  const t = await getTranslations("billing");
+  
   return (
     <div className="space-y-4 md:space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          账单管理
+          {t("title")}
         </h1>
         <p className="text-muted-foreground">
-          管理您的订阅和账单信息
+          {t("subtitle")}
         </p>
       </div>
 

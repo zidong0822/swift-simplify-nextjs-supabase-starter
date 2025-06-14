@@ -12,7 +12,15 @@ import { useStripe } from "@/hooks/useStripe";
 import { useUserPurchases } from "@/hooks/useUserPurchases";
 import PurchaseStatus from "@/components/user/PurchaseStatus";
 import { toast } from "sonner";
-import { ShoppingCart, CreditCard } from "lucide-react";
+import { ShoppingCart, CreditCard, Zap, Crown } from "lucide-react";
+import { 
+  PRICING_CONFIG, 
+  oneTimePlans, 
+  subscriptionPlans, 
+  yearlySubscriptionPlans 
+} from "@/config/pricing";
+import { PricingPlan } from "@/types/stripe";
+import { useTranslations } from "next-intl";
 
 interface BillingClientProps {
   user: {
@@ -25,59 +33,120 @@ interface BillingClientProps {
   };
 }
 
-// 可用的升级计划
-const upgradePlans = [
-  {
-    name: "Pro",
-    price: "$49",
-    description: "适合专业开发者",
-    features: [
-      "所有免费功能",
-      "高级扩展",
-      "优先支持",
-      "高级组件",
-    ],
-    priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg",
-    isPopular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "$199",
-    description: "适合团队和企业",
-    features: [
-      "所有 Pro 功能",
-      "自定义集成",
-      "专属客服支持",
-      "团队协作工具",
-    ],
-    priceId: "price_1RZUWH2cmOQ9qmEBMH8d9GFg",
-    isPopular: false,
-  },
-];
-
 export default function BillingClient({ user }: BillingClientProps) {
   const { redirectToCheckout, loading } = useStripe();
-  const { hasValidPurchase, canPurchase } = useUserPurchases();
+  const { hasValidPurchase, canPurchase, hasActiveSubscription, purchases, subscriptions } = useUserPurchases();
+  const t = useTranslations("billing");
 
-  const handleUpgrade = async (plan: typeof upgradePlans[0]) => {
+  // 根据配置获取可用的升级计划
+  const getAvailablePlans = (): PricingPlan[] => {
+    let plans: PricingPlan[] = [];
+    
+    // 根据配置决定显示哪些计划
+    if (PRICING_CONFIG.display.showOneTime) {
+      plans = [...plans, ...oneTimePlans.filter(plan => plan.visible !== false)];
+    }
+    
+    if (PRICING_CONFIG.display.showSubscription) {
+      if (PRICING_CONFIG.display.showYearlySubscription) {
+        plans = [...plans, ...yearlySubscriptionPlans.filter(plan => plan.visible !== false)];
+      } else {
+        plans = [...plans, ...subscriptionPlans.filter(plan => plan.visible !== false)];
+      }
+    }
+    
+    return plans;
+  };
+
+  // 获取当前配置的主要模式描述
+  const getCurrentModeDescription = (): string => {
+    if (PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+      return t("chooseOneTimeOrSubscription");
+    } else if (PRICING_CONFIG.display.showOneTime) {
+      return PRICING_CONFIG.descriptions.onetime;
+    } else if (PRICING_CONFIG.display.showSubscription) {
+      if (PRICING_CONFIG.display.showYearlySubscription) {
+        return PRICING_CONFIG.descriptions.yearly;
+      } else {
+        return PRICING_CONFIG.descriptions.subscription;
+      }
+    }
+    return t("selectSuitablePlan");
+  };
+
+  // 获取配置感知的标题
+  const getModeTitle = (): string => {
+    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+      return t("oneTimePurchasePlan");
+    } else if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+      if (PRICING_CONFIG.display.showYearlySubscription) {
+        return t("yearlySubscriptionPlan");
+      } else {
+        return t("subscriptionPlanTitle");
+      }
+    }
+    return t("upgradeYourPlan");
+  };
+
+  // 获取计划图标
+  const getPlanIcon = (plan: PricingPlan) => {
+    if (plan.isSubscription) {
+      return <Zap className="h-4 w-4" />;
+    } else {
+      return <Crown className="h-4 w-4" />;
+    }
+  };
+
+  // 获取计划类型标签
+  const getPlanTypeLabel = (plan: PricingPlan): string => {
+    if (plan.isSubscription) {
+      return plan.price.includes("年") || plan.price.includes("Year") || plan.price.includes("年間") 
+        ? t("yearlySubscription") 
+        : t("monthlySubscription");
+    } else {
+      return t("oneTimePurchaseLabel");
+    }
+  };
+
+  const handleUpgrade = async (plan: PricingPlan) => {
     if (!plan.priceId) {
-      toast.error("价格配置错误，请联系客服");
+      toast.error(t("priceConfigError"));
       return;
     }
 
     // 检查是否可以购买
-    const purchaseCheck = canPurchase(plan.name, true);
+    const purchaseCheck = canPurchase(plan.name, plan.isSubscription || false);
     if (!purchaseCheck.canPurchase) {
-      toast.error(purchaseCheck.reason || "无法购买此计划");
+      toast.error(purchaseCheck.reason || t("cannotPurchase"));
       return;
     }
 
     try {
       await redirectToCheckout(plan.priceId);
     } catch {
-      toast.error("升级失败，请重试");
+      toast.error(t("upgradeFailed"));
     }
   };
+
+
+
+  // 检查是否应该显示升级选项
+  const shouldShowUpgradeOptions = (): boolean => {
+    // 如果配置为只显示一次性购买，且用户已有任何购买记录，则不显示
+    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+      return !hasValidPurchase(); // 检查是否有任何有效购买
+    }
+    
+    // 如果配置为只显示订阅，且用户已有活跃订阅，则不显示
+    if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+      return !hasActiveSubscription();
+    }
+    
+    // 混合模式下，如果用户既没有购买也没有订阅，则显示
+    return !hasValidPurchase();
+  };
+
+  const availablePlans = getAvailablePlans();
 
   return (
     <div className="space-y-6">
@@ -86,32 +155,32 @@ export default function BillingClient({ user }: BillingClientProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            账户信息
+            {t("accountInfo")}
           </CardTitle>
           <CardDescription>
-            您的账户基本信息
+            {t("accountInfoDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm font-medium">用户名:</span>
-              <span className="text-sm">{user.name || "未设置"}</span>
+              <span className="text-sm font-medium">{t("username")}:</span>
+              <span className="text-sm">{user.name || t("notSet")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium">邮箱:</span>
+              <span className="text-sm font-medium">{t("email")}:</span>
               <span className="text-sm">{user.email}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium">注册时间:</span>
+              <span className="text-sm font-medium">{t("registrationDate")}:</span>
               <span className="text-sm">
-                {new Date(user.createdAt).toLocaleDateString('zh-CN')}
+                {new Date(user.createdAt).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium">邮箱验证:</span>
+              <span className="text-sm font-medium">{t("emailVerification")}:</span>
               <span className={`text-sm ${user.emailVerified ? 'text-green-600' : 'text-orange-600'}`}>
-                {user.emailVerified ? "已验证" : "未验证"}
+                {user.emailVerified ? t("verified") : t("unverified")}
               </span>
             </div>
           </div>
@@ -121,38 +190,44 @@ export default function BillingClient({ user }: BillingClientProps) {
       {/* 购买状态组件 */}
       <PurchaseStatus />
 
-      {/* 升级选项 - 只在没有有效购买时显示 */}
-      {!hasValidPurchase() && (
+      {/* 升级选项 - 根据配置和用户状态智能显示 */}
+      {shouldShowUpgradeOptions() && availablePlans.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              升级您的计划
+              {getModeTitle()}
             </CardTitle>
             <CardDescription>
-              选择更适合您需求的计划
+              {getCurrentModeDescription()}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upgradePlans.map((plan) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {availablePlans.map((plan) => (
                 <div
-                  key={plan.name}
+                  key={`${plan.name}-${plan.isSubscription ? 'sub' : 'onetime'}`}
                   className={`relative border rounded-lg p-6 ${
-                    plan.isPopular
+                    plan.popular
                       ? "border-primary shadow-md"
                       : "border-gray-200"
                   }`}
                 >
-                  {plan.isPopular && (
+                  {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full font-medium">
-                      推荐
+                      {t("recommended")}
                     </div>
                   )}
                   
                   <div className="text-center mb-4">
-                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                    <div className="text-3xl font-bold mb-2">{plan.price}</div>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getPlanIcon(plan)}
+                      <h3 className="text-xl font-bold">{plan.name}</h3>
+                    </div>
+                    <div className="text-3xl font-bold mb-1">{plan.price}</div>
+                    <div className="text-xs text-primary font-medium mb-2">
+                      {getPlanTypeLabel(plan)}
+                    </div>
                     <p className="text-sm text-gray-500">{plan.description}</p>
                   </div>
 
@@ -160,7 +235,7 @@ export default function BillingClient({ user }: BillingClientProps) {
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-sm">
                         <svg
-                          className="h-4 w-4 text-green-500 mr-2"
+                          className="h-4 w-4 text-green-500 mr-2 flex-shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -181,9 +256,9 @@ export default function BillingClient({ user }: BillingClientProps) {
                     onClick={() => handleUpgrade(plan)}
                     disabled={loading}
                     className="w-full"
-                    variant={plan.isPopular ? "default" : "outline"}
+                    variant={plan.popular ? "default" : "outline"}
                   >
-                    {loading ? "处理中..." : `升级到 ${plan.name}`}
+                    {loading ? t("processing") : plan.buttonText || `${t("select")} ${plan.name}`}
                   </Button>
                 </div>
               ))}
@@ -192,41 +267,80 @@ export default function BillingClient({ user }: BillingClientProps) {
         </Card>
       )}
 
+      {/* 当用户已有有效购买时的提示 */}
+      {!shouldShowUpgradeOptions() && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              {t("validPlanOwned")}
+            </CardTitle>
+            <CardDescription>
+              {t("thankYouForSupport", {
+                type: PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
+                  ? t("purchase") 
+                  : t("subscription")
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* 庆祝区域 */}
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">🎉</div>
+              <p className="text-lg font-medium mb-2">{t("allFeaturesUnlocked")}</p>
+              <p className="text-gray-600 mb-4">
+                {PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
+                  ? t("enjoyPermanentAccess")
+                  : t("enjoySubscriptionService")}
+              </p>
+              <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                <Crown className="h-4 w-4 mr-2" />
+                {PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
+                  ? t("purchase") 
+                  : t("subscription")} {t("purchased")}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 帮助和支持 */}
       <Card>
         <CardHeader>
-          <CardTitle>需要帮助？</CardTitle>
+          <CardTitle>{t("needHelp")}</CardTitle>
           <CardDescription>
-            如果您有任何问题或需要支持，请联系我们
+            {t("needHelpDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">技术支持</h4>
+                <h4 className="font-medium mb-2">{t("technicalSupport")}</h4>
                 <p className="text-sm text-gray-600 mb-3">
-                  遇到技术问题？我们的技术团队随时为您提供帮助。
+                  {t("technicalSupportDesc")}
                 </p>
                 <Button variant="outline" size="sm">
-                  联系技术支持
+                  {t("contactTechnicalSupport")}
                 </Button>
               </div>
               
               <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">账单问题</h4>
+                <h4 className="font-medium mb-2">
+                  {PRICING_CONFIG.display.showSubscription ? t("subscriptionIssues") : t("purchaseIssues")}
+                </h4>
                 <p className="text-sm text-gray-600 mb-3">
-                  对账单有疑问？我们的客服团队将为您解答。
+                  {PRICING_CONFIG.display.showSubscription ? t("subscriptionIssuesDesc") : t("purchaseIssuesDesc")}
                 </p>
                 <Button variant="outline" size="sm">
-                  联系客服
+                  {t("contactCustomerService")}
                 </Button>
               </div>
             </div>
             
             <div className="text-center pt-4 border-t">
               <p className="text-sm text-gray-500">
-                工作时间：周一至周五 9:00-18:00 | 邮箱：support@example.com
+                {t("workingHours")}
               </p>
             </div>
           </div>
