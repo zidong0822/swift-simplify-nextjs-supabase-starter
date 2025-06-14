@@ -18,8 +18,8 @@ export const useStripe = () => {
         },
         body: JSON.stringify({
           priceId,
-          successUrl: `${window.location.origin}/success`,
-          cancelUrl: `${window.location.origin}/pricing`,
+          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/#pricing`,
         }),
       })
 

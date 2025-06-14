@@ -120,5 +120,10 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
   },
+  advanced: {
+    database: {
+      generateId: false, // 让数据库处理ID生成，兼容UUID
+    },
+  },
   plugins: [nextCookies()],
 });
