@@ -13,6 +13,7 @@ import {
   subscriptionPlans,
   yearlySubscriptionPlans,
 } from "@/config/pricing";
+import { useTranslations } from "next-intl";
 
 const checkIcon = (
   <svg
@@ -39,11 +40,74 @@ export default function Pricing() {
     hasPurchased,
     loading: purchasesLoading,
   } = useUserPurchases();
+  const t = useTranslations("pricing");
 
   // 价格模式切换状态
   const [pricingMode, setPricingMode] = useState<"onetime" | "subscription">(
     PRICING_CONFIG.defaultMode
   );
+
+  // 获取国际化的产品信息
+  const getLocalizedPlan = (plan: PricingPlan) => {
+    let planKey = "";
+    
+    // 根据计划名称和类型确定翻译键
+    switch (plan.name) {
+      case "Starter Kit":
+        planKey = "starterKit";
+        break;
+      case "Pro":
+        if (plan.isSubscription) {
+          if (plan.price.includes("年") || plan.price.includes("/年")) {
+            planKey = "proYearly";
+          } else {
+            planKey = "proSubscription";
+          }
+        } else {
+          planKey = "pro";
+        }
+        break;
+      case "Enterprise Kit":
+        planKey = "enterpriseKit";
+        break;
+      case "Basic":
+        if (plan.price.includes("年") || plan.price.includes("/年")) {
+          planKey = "basicYearly";
+        } else {
+          planKey = "basic";
+        }
+        break;
+      case "Enterprise":
+        if (plan.price.includes("年") || plan.price.includes("/年")) {
+          planKey = "enterpriseYearly";
+        } else {
+          planKey = "enterprise";
+        }
+        break;
+      default:
+        return plan; // 如果没有匹配的翻译，返回原始计划
+    }
+
+    // 检查翻译是否存在
+    try {
+      const localizedName = t(`plans.${planKey}.name`);
+      const localizedDescription = t(`plans.${planKey}.description`);
+      const localizedButtonText = t(`plans.${planKey}.buttonText`);
+      const localizedFeatures = t.raw(`plans.${planKey}.features`) as string[];
+
+      return {
+        ...plan,
+        name: localizedName,
+        description: localizedDescription,
+        buttonText: localizedButtonText,
+        features: localizedFeatures,
+      };
+    } catch (error) {
+      // 如果翻译不存在，返回原始计划
+      console.warn(`Translation not found for plan: ${planKey}`, error);
+      return plan;
+    }
+  };
 
   // 根据配置和当前模式获取计划并过滤可见的计划
   const getVisiblePlans = () => {
@@ -86,32 +150,41 @@ export default function Pricing() {
   const getCurrentDescription = () => {
     if (!PRICING_CONFIG.display.showToggle) {
       if (PRICING_CONFIG.display.showOneTime) {
-        return PRICING_CONFIG.descriptions.onetime;
+        return t("oneTimeDescription");
       } else if (PRICING_CONFIG.display.showSubscription) {
         if (PRICING_CONFIG.display.showYearlySubscription) {
-          return PRICING_CONFIG.descriptions.yearly;
+          return t("yearlyDescription");
         } else {
-          return PRICING_CONFIG.descriptions.subscription;
+          return t("subscriptionDescription");
         }
       }
     }
-    return PRICING_CONFIG.descriptions[pricingMode];
+    
+    if (pricingMode === "onetime") {
+      return t("oneTimeDescription");
+    } else {
+      if (PRICING_CONFIG.display.showYearlySubscription) {
+        return t("yearlyDescription");
+      } else {
+        return t("subscriptionDescription");
+      }
+    }
   };
 
   const handleSubscribe = async (plan: PricingPlan) => {
     if (plan.isFree) {
       // 处理免费计划逻辑
-      toast.success("欢迎使用免费计划！");
+      toast.success(t("welcomeFreePlan"));
       return;
     }
 
     if (!user) {
-      toast.error("请先登录");
+      toast.error(t("pleaseLogin"));
       return;
     }
 
     if (!plan.priceId) {
-      toast.error("价格配置错误，请联系客服");
+      toast.error(t("priceConfigError"));
       return;
     }
 
@@ -121,14 +194,14 @@ export default function Pricing() {
     const purchaseCheck = canPurchase(plan.name, plan.isSubscription || false);
     console.log("purchaseCheck", purchaseCheck);
     if (!purchaseCheck.canPurchase) {
-      toast.error(purchaseCheck.reason || "无法购买此计划");
+      toast.error(purchaseCheck.reason || t("cannotPurchase"));
       return;
     }
 
     try {
       await redirectToCheckout(plan.priceId);
     } catch {
-      toast.error("支付初始化失败，请重试");
+      toast.error(t("paymentInitFailed"));
     }
   };
 
@@ -144,7 +217,7 @@ export default function Pricing() {
 
     if (!user) {
       return {
-        text: "登录后购买",
+        text: t("loginToPurchase"),
         disabled: false,
         variant: plan.buttonVariant,
       };
@@ -152,7 +225,7 @@ export default function Pricing() {
 
     if (purchasesLoading) {
       return {
-        text: "检查中...",
+        text: t("checking"),
         disabled: true,
         variant: plan.buttonVariant,
       };
@@ -161,7 +234,7 @@ export default function Pricing() {
     // 检查是否已购买或订阅这个具体计划
     if (plan.isSubscription && hasActiveSubscription(plan.name)) {
       return {
-        text: "已订阅",
+        text: t("subscribed"),
         disabled: true,
         variant: "outline" as const,
       };
@@ -169,7 +242,7 @@ export default function Pricing() {
 
     if (!plan.isSubscription && hasPurchased(plan.name)) {
       return {
-        text: "已购买",
+        text: t("purchased"),
         disabled: true,
         variant: "outline" as const,
       };
@@ -178,14 +251,14 @@ export default function Pricing() {
     // 对于订阅计划，如果用户已有其他订阅，显示切换选项
     if (plan.isSubscription && hasActiveSubscription()) {
       return {
-        text: "切换订阅",
+        text: t("switchSubscription"),
         disabled: false,
         variant: "outline" as const,
       };
     }
 
     return {
-      text: loading ? "处理中..." : plan.buttonText,
+      text: loading ? t("processing") : plan.buttonText,
       disabled: loading,
       variant: plan.buttonVariant,
     };
@@ -203,10 +276,10 @@ export default function Pricing() {
     >
       <div className="container px-4 md:px-6 mx-auto">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-4">
-          Simple, Transparent <span className="text-primary">Pricing</span>
+          {t("title")} <span className="text-primary">{t("titleHighlight")}</span>
         </h2>
         <p className="text-center text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
-          Choose the plan that works best for your project needs
+          {t("subtitle")}
         </p>
 
         {/* 价格模式切换器 */}
@@ -222,7 +295,7 @@ export default function Pricing() {
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   }`}
                 >
-                  {PRICING_CONFIG.labels.onetime}
+                  {t("oneTimeLabel")}
                 </button>
                 <button
                   onClick={() => setPricingMode("subscription")}
@@ -232,7 +305,7 @@ export default function Pricing() {
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   }`}
                 >
-                  {PRICING_CONFIG.labels.subscription}
+                  {t("subscriptionLabel")}
                 </button>
               </div>
             </div>
@@ -248,29 +321,30 @@ export default function Pricing() {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {currentPlans.map((plan) => {
-            const buttonProps = getButtonProps(plan);
+            const localizedPlan = getLocalizedPlan(plan);
+            const buttonProps = getButtonProps(localizedPlan);
 
             return (
               <div
                 key={plan.name}
                 className={`bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg flex flex-col relative ${
-                  plan.popular
+                  localizedPlan.popular
                     ? "border-2 border-primary"
                     : "border border-gray-200 dark:border-gray-700"
                 }`}
               >
-                {plan.popular && (
+                {localizedPlan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full font-medium">
-                    MOST POPULAR
+                    {t("mostPopular")}
                   </div>
                 )}
                 <div className="mb-5">
-                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                  <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                  <p className="text-sm text-gray-500">{plan.description}</p>
+                  <h3 className="text-xl font-bold mb-2">{localizedPlan.name}</h3>
+                  <div className="text-4xl font-bold mb-2">{localizedPlan.price}</div>
+                  <p className="text-sm text-gray-500">{localizedPlan.description}</p>
                 </div>
                 <ul className="space-y-3 mb-8 flex-grow">
-                  {plan.features.map((feature, index) => (
+                  {localizedPlan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
                       {checkIcon}
                       {feature}
@@ -293,3 +367,4 @@ export default function Pricing() {
     </section>
   );
 }
+

@@ -137,7 +137,8 @@
     "overview": "Overview",
     "profile": "Profile",
     "settings": "Settings",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "billing": "Billing"
   },
   "billing": {
     "title": "Billing Management",
@@ -209,5 +210,144 @@
     "failed": "Failed",
     "loadingPurchaseInfo": "Loading your purchase information...",
     "loadingFailed": "Loading Failed"
+  },
+  "pricing": {
+    "title": "Simple, Transparent",
+    "titleHighlight": "Pricing",
+    "subtitle": "Choose the plan that works best for your project needs",
+    "oneTimeLabel": "One-time Purchase",
+    "subscriptionLabel": "Subscription",
+    "oneTimeDescription": "Pay once, use all features permanently",
+    "subscriptionDescription": "Subscribe monthly or yearly, enjoy continuous updates and support",
+    "yearlyDescription": "Subscribe yearly, enjoy better pricing and continuous updates",
+    "mostPopular": "MOST POPULAR",
+    "welcomeFreePlan": "Welcome to the free plan!",
+    "pleaseLogin": "Please login first",
+    "priceConfigError": "Price configuration error, please contact customer service",
+    "cannotPurchase": "Cannot purchase this plan",
+    "paymentInitFailed": "Payment initialization failed, please try again",
+    "loginToPurchase": "Login to purchase",
+    "checking": "Checking...",
+    "subscribed": "Subscribed",
+    "purchased": "Purchased",
+    "switchSubscription": "Switch Subscription",
+    "processing": "Processing...",
+    "plans": {
+      "starterKit": {
+        "name": "Starter Kit",
+        "description": "One-time purchase, permanent use",
+        "buttonText": "Buy Now",
+        "features": [
+          "Complete Next.js template",
+          "Basic component library",
+          "Documentation and tutorials",
+          "Community support",
+          "Lifetime updates"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "One-time purchase for professional developers",
+        "buttonText": "Buy Now",
+        "features": [
+          "Includes all Starter Kit features",
+          "Advanced component library",
+          "Multiple template variants",
+          "Priority email support",
+          "Commercial use license",
+          "Source code access"
+        ]
+      },
+      "enterpriseKit": {
+        "name": "Enterprise Kit",
+        "description": "Enterprise-level one-time purchase",
+        "buttonText": "Buy Now",
+        "features": [
+          "Includes all Pro features",
+          "Enterprise-grade components",
+          "Custom theme tools",
+          "Dedicated technical support",
+          "Team collaboration features",
+          "White-label solutions"
+        ]
+      },
+      "basic": {
+        "name": "Basic",
+        "description": "Perfect for individual developers",
+        "buttonText": "Start Subscription",
+        "features": [
+          "Basic template access",
+          "Monthly component updates",
+          "Community support",
+          "Basic documentation"
+        ]
+      },
+      "proSubscription": {
+        "name": "Pro",
+        "description": "Best choice for professional developers",
+        "buttonText": "Start Subscription",
+        "features": [
+          "Includes all Basic features",
+          "Advanced component library",
+          "Priority support",
+          "API access",
+          "Custom themes",
+          "Team collaboration (up to 5 members)"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "For large teams and enterprises",
+        "buttonText": "Start Subscription",
+        "features": [
+          "Includes all Pro features",
+          "Unlimited team members",
+          "Dedicated account manager",
+          "SLA guarantee",
+          "Custom integrations",
+          "Advanced analytics"
+        ]
+      },
+      "basicYearly": {
+        "name": "Basic",
+        "description": "Perfect for individual developers (Save 2 months)",
+        "buttonText": "Subscribe Yearly",
+        "features": [
+          "Basic template access",
+          "Monthly component updates",
+          "Community support",
+          "Basic documentation",
+          "💰 Save 17% compared to monthly"
+        ]
+      },
+      "proYearly": {
+        "name": "Pro",
+        "description": "Best choice for professional developers (Save 2 months)",
+        "buttonText": "Subscribe Yearly",
+        "features": [
+          "Includes all Basic features",
+          "Advanced component library",
+          "Priority support",
+          "API access",
+          "Custom themes",
+          "Team collaboration (up to 5 members)",
+          "💰 Save 17% compared to monthly"
+        ]
+      },
+      "enterpriseYearly": {
+        "name": "Enterprise",
+        "description": "For large teams and enterprises (Save 2 months)",
+        "buttonText": "Subscribe Yearly",
+        "features": [
+          "Includes all Pro features",
+          "Unlimited team members",
+          "Dedicated account manager",
+          "SLA guarantee",
+          "Custom integrations",
+          "Advanced analytics",
+          "💰 Save 17% compared to monthly"
+        ]
+      }
+    }
   }
 }

@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3, Settings, User, LogOut, ChevronUp, CreditCard } from "lucide-react";
+import {
+  BarChart3,
+  Settings,
+  User,
+  LogOut,
+  ChevronUp,
+  CreditCard,
+} from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -49,7 +56,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       icon: BarChart3,
     },
     {
-      title: "账单管理",
+      title: t("billing"),
       url: "/dashboard/billing",
       icon: CreditCard,
     },
@@ -97,7 +104,9 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     <span className="truncate font-semibold">
                       {user.name || user.email}
                     </span>
-                    <span className="truncate text-xs">{tDashboard("freeVersion")}</span>
+                    <span className="truncate text-xs">
+                      {tDashboard("freeVersion")}
+                    </span>
                   </div>
                   <ChevronUp className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -137,7 +146,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/billing" className="flex items-center">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    账单管理
+                    {t("billing")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

@@ -137,7 +137,8 @@
     "overview": "概览",
     "profile": "个人资料",
     "settings": "设置",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "billing": "账单管理"
   },
   "billing": {
     "title": "账单管理",
@@ -209,5 +210,144 @@
     "failed": "失败",
     "loadingPurchaseInfo": "加载您的购买信息...",
     "loadingFailed": "加载失败"
+  },
+  "pricing": {
+    "title": "简单透明的",
+    "titleHighlight": "价格方案",
+    "subtitle": "选择最适合您项目需求的计划",
+    "oneTimeLabel": "一次性购买",
+    "subscriptionLabel": "订阅模式",
+    "oneTimeDescription": "一次性付费，永久使用所有功能",
+    "subscriptionDescription": "按月或按年订阅，享受持续更新和支持",
+    "yearlyDescription": "按年订阅，享受更优惠的价格和持续更新",
+    "mostPopular": "最受欢迎",
+    "welcomeFreePlan": "欢迎使用免费计划！",
+    "pleaseLogin": "请先登录",
+    "priceConfigError": "价格配置错误，请联系客服",
+    "cannotPurchase": "无法购买此计划",
+    "paymentInitFailed": "支付初始化失败，请重试",
+    "loginToPurchase": "登录后购买",
+    "checking": "检查中...",
+    "subscribed": "已订阅",
+    "purchased": "已购买",
+    "switchSubscription": "切换订阅",
+    "processing": "处理中...",
+    "plans": {
+      "starterKit": {
+        "name": "入门套件",
+        "description": "一次性购买，永久使用",
+        "buttonText": "立即购买",
+        "features": [
+          "完整的 Next.js 模板",
+          "基础组件库",
+          "文档和教程",
+          "社区支持",
+          "终身更新"
+        ]
+      },
+      "pro": {
+        "name": "专业版",
+        "description": "专业开发者一次性购买",
+        "buttonText": "立即购买",
+        "features": [
+          "包含入门套件所有功能",
+          "高级组件库",
+          "多个模板变体",
+          "优先邮件支持",
+          "商业使用许可",
+          "源码访问权限"
+        ]
+      },
+      "enterpriseKit": {
+        "name": "企业套件",
+        "description": "企业级一次性购买",
+        "buttonText": "立即购买",
+        "features": [
+          "包含专业版所有功能",
+          "企业级组件",
+          "自定义主题工具",
+          "专属技术支持",
+          "团队协作功能",
+          "白标解决方案"
+        ]
+      },
+      "basic": {
+        "name": "基础版",
+        "description": "适合个人开发者",
+        "buttonText": "开始订阅",
+        "features": [
+          "基础模板访问",
+          "月度组件更新",
+          "社区支持",
+          "基础文档"
+        ]
+      },
+      "proSubscription": {
+        "name": "专业版",
+        "description": "专业开发者的最佳选择",
+        "buttonText": "开始订阅",
+        "features": [
+          "包含基础版所有功能",
+          "高级组件库",
+          "优先支持",
+          "API 访问",
+          "自定义主题",
+          "团队协作（最多5人）"
+        ]
+      },
+      "enterprise": {
+        "name": "企业版",
+        "description": "大型团队和企业",
+        "buttonText": "开始订阅",
+        "features": [
+          "包含专业版所有功能",
+          "无限团队成员",
+          "专属客户经理",
+          "SLA 保证",
+          "自定义集成",
+          "高级分析"
+        ]
+      },
+      "basicYearly": {
+        "name": "基础版",
+        "description": "适合个人开发者（节省2个月费用）",
+        "buttonText": "年付订阅",
+        "features": [
+          "基础模板访问",
+          "月度组件更新",
+          "社区支持",
+          "基础文档",
+          "💰 相比月付节省17%"
+        ]
+      },
+      "proYearly": {
+        "name": "专业版",
+        "description": "专业开发者的最佳选择（节省2个月费用）",
+        "buttonText": "年付订阅",
+        "features": [
+          "包含基础版所有功能",
+          "高级组件库",
+          "优先支持",
+          "API 访问",
+          "自定义主题",
+          "团队协作（最多5人）",
+          "💰 相比月付节省17%"
+        ]
+      },
+      "enterpriseYearly": {
+        "name": "企业版",
+        "description": "大型团队和企业（节省2个月费用）",
+        "buttonText": "年付订阅",
+        "features": [
+          "包含专业版所有功能",
+          "无限团队成员",
+          "专属客户经理",
+          "SLA 保证",
+          "自定义集成",
+          "高级分析",
+          "💰 相比月付节省17%"
+        ]
+      }
+    }
   }
 }

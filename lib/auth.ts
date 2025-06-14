@@ -122,7 +122,7 @@ export const auth = betterAuth({
   },
   advanced: {
     database: {
-      generateId: false, // 让数据库处理ID生成，兼容UUID
+      generateId: () => crypto.randomUUID(), // 使用 crypto.randomUUID() 生成 ID
     },
   },
   plugins: [nextCookies()],
