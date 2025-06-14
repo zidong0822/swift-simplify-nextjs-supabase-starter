@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe-server";
 import { headers } from "next/headers";
 import { createClient } from "@/supabase/server";
+import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
   console.log("Stripe webhook received");
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     switch (event.type) {
       case "checkout.session.completed":
-        const session = event.data.object as Record<string, any>;
+        const session = event.data.object as Stripe.Checkout.Session;
         console.log("Payment successful:", session.id);
 
         // 保存支付记录到数据库
@@ -68,8 +69,7 @@ export async function POST(request: NextRequest) {
                 session.payment_status === "paid"
                   ? "succeeded"
                   : session.payment_status,
-              product_name:
-                session.display_items?.[0]?.custom?.name || "Unknown Product",
+              product_name: "Unknown Product",
             });
 
             console.log("Payment record saved for user:", userId);
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         break;
 
       case "customer.subscription.created":
-        const subscription = event.data.object as Record<string, any>;
+        const subscription = event.data.object as Stripe.Subscription;
         console.log("Subscription created:", subscription.id);
 
         try {
@@ -106,10 +106,18 @@ export async function POST(request: NextRequest) {
                 subscription.items.data[0]?.price?.recurring?.interval ||
                 "month",
               current_period_start: new Date(
-                subscription.current_period_start * 1000
+                (
+                  subscription as Stripe.Subscription & {
+                    current_period_start: number;
+                  }
+                ).current_period_start * 1000
               ),
               current_period_end: new Date(
-                subscription.current_period_end * 1000
+                (
+                  subscription as Stripe.Subscription & {
+                    current_period_end: number;
+                  }
+                ).current_period_end * 1000
               ),
               cancel_at_period_end: subscription.cancel_at_period_end,
             });
@@ -125,7 +133,7 @@ export async function POST(request: NextRequest) {
         break;
 
       case "customer.subscription.updated":
-        const updatedSubscription = event.data.object as Record<string, any>;
+        const updatedSubscription = event.data.object as Stripe.Subscription;
         console.log("Subscription updated:", updatedSubscription.id);
 
         try {
@@ -135,10 +143,18 @@ export async function POST(request: NextRequest) {
             .update({
               status: updatedSubscription.status,
               current_period_start: new Date(
-                updatedSubscription.current_period_start * 1000
+                (
+                  updatedSubscription as Stripe.Subscription & {
+                    current_period_start: number;
+                  }
+                ).current_period_start * 1000
               ),
               current_period_end: new Date(
-                updatedSubscription.current_period_end * 1000
+                (
+                  updatedSubscription as Stripe.Subscription & {
+                    current_period_end: number;
+                  }
+                ).current_period_end * 1000
               ),
               cancel_at_period_end: updatedSubscription.cancel_at_period_end,
               updated_at: new Date(),
@@ -152,7 +168,7 @@ export async function POST(request: NextRequest) {
         break;
 
       case "customer.subscription.deleted":
-        const deletedSubscription = event.data.object as Record<string, any>;
+        const deletedSubscription = event.data.object as Stripe.Subscription;
         console.log("Subscription cancelled:", deletedSubscription.id);
 
         try {

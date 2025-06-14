@@ -13,11 +13,11 @@ import { useUserPurchases } from "@/hooks/useUserPurchases";
 import PurchaseStatus from "@/components/user/PurchaseStatus";
 import { toast } from "sonner";
 import { ShoppingCart, CreditCard, Zap, Crown } from "lucide-react";
-import { 
-  PRICING_CONFIG, 
-  oneTimePlans, 
-  subscriptionPlans, 
-  yearlySubscriptionPlans 
+import {
+  PRICING_CONFIG,
+  oneTimePlans,
+  subscriptionPlans,
+  yearlySubscriptionPlans,
 } from "@/config/pricing";
 import { PricingPlan } from "@/types/stripe";
 import { useTranslations } from "next-intl";
@@ -35,32 +35,45 @@ interface BillingClientProps {
 
 export default function BillingClient({ user }: BillingClientProps) {
   const { redirectToCheckout, loading } = useStripe();
-  const { hasValidPurchase, canPurchase, hasActiveSubscription, purchases, subscriptions } = useUserPurchases();
+  const { hasValidPurchase, canPurchase, hasActiveSubscription } =
+    useUserPurchases();
   const t = useTranslations("billing");
 
   // 根据配置获取可用的升级计划
   const getAvailablePlans = (): PricingPlan[] => {
     let plans: PricingPlan[] = [];
-    
+
     // 根据配置决定显示哪些计划
     if (PRICING_CONFIG.display.showOneTime) {
-      plans = [...plans, ...oneTimePlans.filter(plan => plan.visible !== false)];
+      plans = [
+        ...plans,
+        ...oneTimePlans.filter((plan) => plan.visible !== false),
+      ];
     }
-    
+
     if (PRICING_CONFIG.display.showSubscription) {
       if (PRICING_CONFIG.display.showYearlySubscription) {
-        plans = [...plans, ...yearlySubscriptionPlans.filter(plan => plan.visible !== false)];
+        plans = [
+          ...plans,
+          ...yearlySubscriptionPlans.filter((plan) => plan.visible !== false),
+        ];
       } else {
-        plans = [...plans, ...subscriptionPlans.filter(plan => plan.visible !== false)];
+        plans = [
+          ...plans,
+          ...subscriptionPlans.filter((plan) => plan.visible !== false),
+        ];
       }
     }
-    
+
     return plans;
   };
 
   // 获取当前配置的主要模式描述
   const getCurrentModeDescription = (): string => {
-    if (PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+    if (
+      PRICING_CONFIG.display.showOneTime &&
+      PRICING_CONFIG.display.showSubscription
+    ) {
       return t("chooseOneTimeOrSubscription");
     } else if (PRICING_CONFIG.display.showOneTime) {
       return PRICING_CONFIG.descriptions.onetime;
@@ -76,9 +89,15 @@ export default function BillingClient({ user }: BillingClientProps) {
 
   // 获取配置感知的标题
   const getModeTitle = (): string => {
-    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+    if (
+      PRICING_CONFIG.display.showOneTime &&
+      !PRICING_CONFIG.display.showSubscription
+    ) {
       return t("oneTimePurchasePlan");
-    } else if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+    } else if (
+      !PRICING_CONFIG.display.showOneTime &&
+      PRICING_CONFIG.display.showSubscription
+    ) {
       if (PRICING_CONFIG.display.showYearlySubscription) {
         return t("yearlySubscriptionPlan");
       } else {
@@ -100,8 +119,10 @@ export default function BillingClient({ user }: BillingClientProps) {
   // 获取计划类型标签
   const getPlanTypeLabel = (plan: PricingPlan): string => {
     if (plan.isSubscription) {
-      return plan.price.includes("年") || plan.price.includes("Year") || plan.price.includes("年間") 
-        ? t("yearlySubscription") 
+      return plan.price.includes("年") ||
+        plan.price.includes("Year") ||
+        plan.price.includes("年間")
+        ? t("yearlySubscription")
         : t("monthlySubscription");
     } else {
       return t("oneTimePurchaseLabel");
@@ -128,20 +149,24 @@ export default function BillingClient({ user }: BillingClientProps) {
     }
   };
 
-
-
   // 检查是否应该显示升级选项
   const shouldShowUpgradeOptions = (): boolean => {
     // 如果配置为只显示一次性购买，且用户已有任何购买记录，则不显示
-    if (PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription) {
+    if (
+      PRICING_CONFIG.display.showOneTime &&
+      !PRICING_CONFIG.display.showSubscription
+    ) {
       return !hasValidPurchase(); // 检查是否有任何有效购买
     }
-    
+
     // 如果配置为只显示订阅，且用户已有活跃订阅，则不显示
-    if (!PRICING_CONFIG.display.showOneTime && PRICING_CONFIG.display.showSubscription) {
+    if (
+      !PRICING_CONFIG.display.showOneTime &&
+      PRICING_CONFIG.display.showSubscription
+    ) {
       return !hasActiveSubscription();
     }
-    
+
     // 混合模式下，如果用户既没有购买也没有订阅，则显示
     return !hasValidPurchase();
   };
@@ -157,9 +182,7 @@ export default function BillingClient({ user }: BillingClientProps) {
             <CreditCard className="h-5 w-5" />
             {t("accountInfo")}
           </CardTitle>
-          <CardDescription>
-            {t("accountInfoDesc")}
-          </CardDescription>
+          <CardDescription>{t("accountInfoDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -172,14 +195,20 @@ export default function BillingClient({ user }: BillingClientProps) {
               <span className="text-sm">{user.email}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium">{t("registrationDate")}:</span>
+              <span className="text-sm font-medium">
+                {t("registrationDate")}:
+              </span>
               <span className="text-sm">
                 {new Date(user.createdAt).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium">{t("emailVerification")}:</span>
-              <span className={`text-sm ${user.emailVerified ? 'text-green-600' : 'text-orange-600'}`}>
+              <span className="text-sm font-medium">
+                {t("emailVerification")}:
+              </span>
+              <span
+                className={`text-sm ${user.emailVerified ? "text-green-600" : "text-orange-600"}`}
+              >
                 {user.emailVerified ? t("verified") : t("unverified")}
               </span>
             </div>
@@ -198,15 +227,13 @@ export default function BillingClient({ user }: BillingClientProps) {
               <ShoppingCart className="h-5 w-5" />
               {getModeTitle()}
             </CardTitle>
-            <CardDescription>
-              {getCurrentModeDescription()}
-            </CardDescription>
+            <CardDescription>{getCurrentModeDescription()}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availablePlans.map((plan) => (
                 <div
-                  key={`${plan.name}-${plan.isSubscription ? 'sub' : 'onetime'}`}
+                  key={`${plan.name}-${plan.isSubscription ? "sub" : "onetime"}`}
                   className={`relative border rounded-lg p-6 ${
                     plan.popular
                       ? "border-primary shadow-md"
@@ -218,7 +245,7 @@ export default function BillingClient({ user }: BillingClientProps) {
                       {t("recommended")}
                     </div>
                   )}
-                  
+
                   <div className="text-center mb-4">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       {getPlanIcon(plan)}
@@ -258,7 +285,9 @@ export default function BillingClient({ user }: BillingClientProps) {
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
                   >
-                    {loading ? t("processing") : plan.buttonText || `${t("select")} ${plan.name}`}
+                    {loading
+                      ? t("processing")
+                      : plan.buttonText || `${t("select")} ${plan.name}`}
                   </Button>
                 </div>
               ))}
@@ -277,9 +306,11 @@ export default function BillingClient({ user }: BillingClientProps) {
             </CardTitle>
             <CardDescription>
               {t("thankYouForSupport", {
-                type: PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
-                  ? t("purchase") 
-                  : t("subscription")
+                type:
+                  PRICING_CONFIG.display.showOneTime &&
+                  !PRICING_CONFIG.display.showSubscription
+                    ? t("purchase")
+                    : t("subscription"),
               })}
             </CardDescription>
           </CardHeader>
@@ -287,17 +318,22 @@ export default function BillingClient({ user }: BillingClientProps) {
             {/* 庆祝区域 */}
             <div className="text-center py-8">
               <div className="text-6xl mb-4">🎉</div>
-              <p className="text-lg font-medium mb-2">{t("allFeaturesUnlocked")}</p>
+              <p className="text-lg font-medium mb-2">
+                {t("allFeaturesUnlocked")}
+              </p>
               <p className="text-gray-600 mb-4">
-                {PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
+                {PRICING_CONFIG.display.showOneTime &&
+                !PRICING_CONFIG.display.showSubscription
                   ? t("enjoyPermanentAccess")
                   : t("enjoySubscriptionService")}
               </p>
               <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
                 <Crown className="h-4 w-4 mr-2" />
-                {PRICING_CONFIG.display.showOneTime && !PRICING_CONFIG.display.showSubscription 
-                  ? t("purchase") 
-                  : t("subscription")} {t("purchased")}
+                {PRICING_CONFIG.display.showOneTime &&
+                !PRICING_CONFIG.display.showSubscription
+                  ? t("purchase")
+                  : t("subscription")}{" "}
+                {t("purchased")}
               </div>
             </div>
           </CardContent>
@@ -308,9 +344,7 @@ export default function BillingClient({ user }: BillingClientProps) {
       <Card>
         <CardHeader>
           <CardTitle>{t("needHelp")}</CardTitle>
-          <CardDescription>
-            {t("needHelpDesc")}
-          </CardDescription>
+          <CardDescription>{t("needHelpDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -324,28 +358,30 @@ export default function BillingClient({ user }: BillingClientProps) {
                   {t("contactTechnicalSupport")}
                 </Button>
               </div>
-              
+
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">
-                  {PRICING_CONFIG.display.showSubscription ? t("subscriptionIssues") : t("purchaseIssues")}
+                  {PRICING_CONFIG.display.showSubscription
+                    ? t("subscriptionIssues")
+                    : t("purchaseIssues")}
                 </h4>
                 <p className="text-sm text-gray-600 mb-3">
-                  {PRICING_CONFIG.display.showSubscription ? t("subscriptionIssuesDesc") : t("purchaseIssuesDesc")}
+                  {PRICING_CONFIG.display.showSubscription
+                    ? t("subscriptionIssuesDesc")
+                    : t("purchaseIssuesDesc")}
                 </p>
                 <Button variant="outline" size="sm">
                   {t("contactCustomerService")}
                 </Button>
               </div>
             </div>
-            
+
             <div className="text-center pt-4 border-t">
-              <p className="text-sm text-gray-500">
-                {t("workingHours")}
-              </p>
+              <p className="text-sm text-gray-500">{t("workingHours")}</p>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
   );
-} 
+}

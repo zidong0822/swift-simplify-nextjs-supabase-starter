@@ -1,7 +1,26 @@
 {
   "name": "swift-simplify-nextjs-supabase-starter",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": false,
+  "description": "A Next.js starter template with Supabase integration for rapid development",
+  "keywords": [
+    "nextjs",
+    "supabase",
+    "starter",
+    "template",
+    "react",
+    "typescript"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/issues"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
