@@ -12,7 +12,8 @@ export default function PurchaseStatus() {
     subscriptions, 
     loading, 
     error,
-    hasActiveSubscription 
+    hasActiveSubscription,
+    hasValidPurchase 
   } = useUserPurchases();
 
   if (loading) {
@@ -91,6 +92,39 @@ export default function PurchaseStatus() {
 
   return (
     <div className="space-y-6">
+      {/* 总体购买状态 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            购买状态总览
+            {hasValidPurchase() && (
+              <Badge variant="default" className="bg-green-500">已购买</Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            您的购买和订阅状态概览
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{purchases.length}</div>
+              <div className="text-sm text-gray-500">单次购买</div>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{subscriptions.length}</div>
+              <div className="text-sm text-gray-500">订阅记录</div>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">
+                {hasActiveSubscription() ? '1' : '0'}
+              </div>
+              <div className="text-sm text-gray-500">活跃订阅</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 订阅状态 */}
       <Card>
         <CardHeader>

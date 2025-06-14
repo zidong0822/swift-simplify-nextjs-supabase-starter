@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth-context';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 export interface UserPurchase {
   id: string;
@@ -29,24 +29,40 @@ export const useUserPurchases = () => {
 
   // 检查用户是否已购买特定产品
   const hasPurchased = (productName: string): boolean => {
+    console.log("hasPurchased", productName);
     return purchases.some(
-      purchase => 
-        purchase.product_name === productName && 
-        purchase.status === 'succeeded'
+      (purchase) =>
+        purchase.product_name === productName && purchase.status === "succeeded"
     );
   };
 
   // 检查用户是否有活跃订阅
   const hasActiveSubscription = (planName?: string): boolean => {
+    console.log("hasActiveSubscription", planName);
     const activeSubscriptions = subscriptions.filter(
-      sub => sub.status === 'active' && new Date(sub.current_period_end) > new Date()
+      (sub) =>
+        sub.status === "active" && new Date(sub.current_period_end) > new Date()
     );
 
     if (planName) {
-      return activeSubscriptions.some(sub => sub.plan_name === planName);
+      return activeSubscriptions.some((sub) => sub.plan_name === planName);
     }
 
     return activeSubscriptions.length > 0;
+  };
+
+  // 检查用户是否有有效的购买（包括单次购买和活跃订阅）
+  const hasValidPurchase = (productName?: string): boolean => {
+    console.log("hasValidPurchase", productName);
+    // 检查单次购买
+    const hasOneTimePurchase = productName
+      ? hasPurchased(productName)
+      : purchases.some((purchase) => purchase.status === "succeeded");
+
+    // 检查活跃订阅
+    const hasActiveSub = hasActiveSubscription(productName);
+
+    return hasOneTimePurchase || hasActiveSub;
   };
 
   // 获取用户的购买和订阅信息
@@ -57,46 +73,54 @@ export const useUserPurchases = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/stripe/user-purchases', {
-        method: 'GET',
+      const response = await fetch("/api/stripe/user-purchases", {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user purchases');
+        throw new Error("Failed to fetch user purchases");
       }
 
       const data = await response.json();
       setPurchases(data.purchases || []);
       setSubscriptions(data.subscriptions || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   // 检查是否可以购买特定计划
-  const canPurchase = (planName: string, isSubscription: boolean = false): {
+  const canPurchase = (
+    planName: string,
+    isSubscription: boolean = false
+  ): {
     canPurchase: boolean;
     reason?: string;
   } => {
+    console.log("canPurchase", planName, isSubscription);
     if (!user) {
-      return { canPurchase: false, reason: '请先登录' };
+      return { canPurchase: false, reason: "请先登录" };
     }
 
     if (isSubscription) {
+      console.log("hasActiveSubscription(planName)", planName);
       if (hasActiveSubscription(planName)) {
-        return { canPurchase: false, reason: '您已经订阅了此计划' };
+        return { canPurchase: false, reason: "您已经订阅了此计划" };
       }
       if (hasActiveSubscription()) {
-        return { canPurchase: false, reason: '您已有活跃订阅，请先取消当前订阅' };
+        return {
+          canPurchase: false,
+          reason: "您已有活跃订阅，请先取消当前订阅",
+        };
       }
     } else {
       if (hasPurchased(planName)) {
-        return { canPurchase: false, reason: '您已经购买过此产品' };
+        return { canPurchase: false, reason: "您已经购买过此产品" };
       }
     }
 
@@ -120,7 +144,8 @@ export const useUserPurchases = () => {
     error,
     hasPurchased,
     hasActiveSubscription,
+    hasValidPurchase,
     canPurchase,
     refetch: fetchUserPurchases,
   };
-}; 
+};
