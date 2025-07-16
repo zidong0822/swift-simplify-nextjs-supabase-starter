@@ -38,7 +38,7 @@
     "@radix-ui/react-slot": "^1.2.0",
     "@radix-ui/react-toast": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.2.7",
-    "@stripe/stripe-js": "^7.3.1",
+    "@stripe/stripe-js": "^7.4.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
     "@tanstack/react-query": "^5.66.3",
@@ -58,7 +58,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "resend": "^4.0.2",
     "sonner": "^1.7.4",
-    "stripe": "^18.2.1",
+    "stripe": "^18.3.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"
