@@ -1,0 +1,684 @@
+# Stripe 支付集成指南
+
+## 技术栈
+
+本项目使用 **Stripe** 作为支付处理解决方案，提供安全、可靠的支付体验。
+
+### 核心功能
+
+- ✅ **一次性支付**: 产品购买、服务费用
+- ✅ **订阅管理**: 月度/年度订阅
+- ✅ **Webhook 处理**: 实时支付状态更新
+- ✅ **购买验证**: 用户购买状态检查
+- ✅ **退款处理**: 自动化退款流程
+- ✅ **多币种支持**: 全球支付支持
+
+## 核心配置
+
+### 服务器端配置
+```typescript
+// lib/stripe-server.ts
+import "server-only";
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is not set");
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  typescript: true,
+});
+```
+
+### 客户端配置
+```typescript
+// lib/stripe.ts
+export const getStripe = () => {
+  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+    throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set')
+  }
+ 
+  return import('@stripe/stripe-js').then(({ loadStripe }) =>
+    loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+  )
+}
+```
+
+## 支付 Hooks
+
+### useStripe Hook
+```typescript
+// hooks/useStripe.ts
+import { useState } from 'react'
+import { getStripe } from '@/lib/stripe'
+
+export const useStripe = () => {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const redirectToCheckout = async (priceId: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // 创建结账会话
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/#pricing`,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+
+      const { sessionId } = await response.json()
+
+      // 重定向到Stripe结账页面
+      const stripe = await getStripe()
+      if (!stripe) {
+        throw new Error('Stripe failed to load')
+      }
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId,
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    redirectToCheckout,
+    loading,
+    error,
+  }
+}
+```
+
+### useUserPurchases Hook
+```typescript
+// hooks/useUserPurchases.ts
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+
+export interface UserPurchase {
+  id: string;
+  product_name: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+}
+
+export interface UserSubscription {
+  id: string;
+  plan_name: string;
+  status: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+}
+
+export const useUserPurchases = () => {
+  const { user } = useAuth();
+  const [purchases, setPurchases] = useState<UserPurchase[]>([]);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 检查用户是否已购买特定产品
+  const hasPurchased = (productName: string): boolean => {
+    return purchases.some(
+      (purchase) =>
+        purchase.product_name === productName && purchase.status === "succeeded"
+    );
+  };
+
+  // 检查用户是否有活跃订阅
+  const hasActiveSubscription = (planName?: string): boolean => {
+    const activeSubscriptions = subscriptions.filter(
+      (sub) =>
+        sub.status === "active" && new Date(sub.current_period_end) > new Date()
+    );
+
+    if (planName) {
+      return activeSubscriptions.some((sub) => sub.plan_name === planName);
+    }
+
+    return activeSubscriptions.length > 0;
+  };
+
+  // 检查用户是否有有效的购买（包括单次购买和活跃订阅）
+  const hasValidPurchase = (productName?: string): boolean => {
+    const hasOneTimePurchase = productName
+      ? hasPurchased(productName)
+      : purchases.some((purchase) => purchase.status === "succeeded");
+
+    const hasActiveSub = hasActiveSubscription(productName);
+
+    return hasOneTimePurchase || hasActiveSub;
+  };
+
+  // 检查是否可以购买特定计划
+  const canPurchase = (
+    planName: string,
+    isSubscription: boolean = false
+  ): {
+    canPurchase: boolean;
+    reason?: string;
+  } => {
+    if (!user) {
+      return { canPurchase: false, reason: "请先登录" };
+    }
+
+    if (isSubscription) {
+      if (hasActiveSubscription(planName)) {
+        return { canPurchase: false, reason: "您已经订阅了此计划" };
+      }
+      if (hasActiveSubscription()) {
+        return {
+          canPurchase: false,
+          reason: "您已有活跃订阅，请先取消当前订阅",
+        };
+      }
+    } else {
+      if (hasPurchased(planName)) {
+        return { canPurchase: false, reason: "您已经购买过此产品" };
+      }
+    }
+
+    return { canPurchase: true };
+  };
+
+  // 获取用户的购买和订阅信息
+  const fetchUserPurchases = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/stripe/user-purchases", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user purchases");
+      }
+
+      const data = await response.json();
+      setPurchases(data.purchases || []);
+      setSubscriptions(data.subscriptions || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 当用户登录状态改变时重新获取数据
+  useEffect(() => {
+    if (user) {
+      fetchUserPurchases();
+    } else {
+      setPurchases([]);
+      setSubscriptions([]);
+    }
+  }, [user]);
+
+  return {
+    purchases,
+    subscriptions,
+    loading,
+    error,
+    hasPurchased,
+    hasActiveSubscription,
+    hasValidPurchase,
+    canPurchase,
+    refetch: fetchUserPurchases,
+  };
+};
+```
+
+## API 路由
+
+### 创建结账会话
+```typescript
+// app/api/stripe/create-checkout-session/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe-server";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+export async function POST(request: NextRequest) {
+  try {
+    const { priceId, successUrl, cancelUrl } = await request.json();
+
+    if (!priceId) {
+      return NextResponse.json(
+        { error: "Price ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // 获取用户会话
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // 创建 Stripe 结账会话
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: "payment", // 或 "subscription" 用于订阅
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: session.user.email,
+      metadata: {
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json({ sessionId: checkoutSession.id });
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Webhook 处理
+```typescript
+// app/api/stripe/webhook/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe-server";
+import { createClient } from "@/supabase/server";
+import Stripe from "stripe";
+
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+export async function POST(request: NextRequest) {
+  const body = await request.text();
+  const signature = request.headers.get("stripe-signature")!;
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err);
+    return NextResponse.json(
+      { error: "Invalid signature" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = createClient();
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        
+        // 记录支付成功
+        await supabase.from("payments").insert({
+          user_id: session.metadata?.userId,
+          amount: session.amount_total! / 100,
+          currency: session.currency!,
+          status: "succeeded",
+          stripe_payment_intent_id: session.payment_intent as string,
+          product_name: session.display_items?.[0]?.custom?.name || "Unknown",
+        });
+        
+        break;
+      }
+
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        
+        // 更新订阅状态
+        await supabase
+          .from("subscriptions")
+          .upsert({
+            stripe_subscription_id: subscription.id,
+            user_id: subscription.metadata?.userId,
+            status: subscription.status,
+            plan_name: subscription.items.data[0].price.nickname || "Unknown",
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          });
+        
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        
+        // 标记订阅为已取消
+        await supabase
+          .from("subscriptions")
+          .update({ status: "canceled" })
+          .eq("stripe_subscription_id", subscription.id);
+        
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### 获取用户购买信息
+```typescript
+// app/api/stripe/user-purchases/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { createClient } from "@/supabase/server";
+import { headers } from "next/headers";
+
+export async function GET(request: NextRequest) {
+  try {
+    // 获取用户会话
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const supabase = createClient();
+
+    // 获取用户的购买记录
+    const { data: purchases, error: purchasesError } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false });
+
+    if (purchasesError) {
+      throw purchasesError;
+    }
+
+    // 获取用户的订阅记录
+    const { data: subscriptions, error: subscriptionsError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false });
+
+    if (subscriptionsError) {
+      throw subscriptionsError;
+    }
+
+    return NextResponse.json({
+      purchases: purchases || [],
+      subscriptions: subscriptions || [],
+    });
+  } catch (error) {
+    console.error("Error fetching user purchases:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## 组件示例
+
+### 支付按钮组件
+```typescript
+// components/PurchaseButton.tsx
+"use client";
+
+import { useStripe } from "@/hooks/useStripe";
+import { useUserPurchases } from "@/hooks/useUserPurchases";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+
+interface PurchaseButtonProps {
+  priceId: string;
+  productName: string;
+  isSubscription?: boolean;
+  children: React.ReactNode;
+}
+
+export function PurchaseButton({ 
+  priceId, 
+  productName, 
+  isSubscription = false,
+  children 
+}: PurchaseButtonProps) {
+  const { user } = useAuth();
+  const { redirectToCheckout, loading } = useStripe();
+  const { canPurchase, hasValidPurchase } = useUserPurchases();
+
+  if (!user) {
+    return (
+      <Button disabled>
+        请先登录
+      </Button>
+    );
+  }
+
+  if (hasValidPurchase(productName)) {
+    return (
+      <Button disabled>
+        已购买
+      </Button>
+    );
+  }
+
+  const purchaseCheck = canPurchase(productName, isSubscription);
+  
+  if (!purchaseCheck.canPurchase) {
+    return (
+      <Button disabled>
+        {purchaseCheck.reason}
+      </Button>
+    );
+  }
+
+  const handlePurchase = () => {
+    redirectToCheckout(priceId);
+  };
+
+  return (
+    <Button 
+      onClick={handlePurchase} 
+      disabled={loading}
+    >
+      {loading ? "处理中..." : children}
+    </Button>
+  );
+}
+```
+
+### 购买状态组件
+```typescript
+// components/user/PurchaseStatus.tsx
+"use client";
+
+import { useUserPurchases } from "@/hooks/useUserPurchases";
+import { Badge } from "@/components/ui/badge";
+
+interface PurchaseStatusProps {
+  productName: string;
+}
+
+export function PurchaseStatus({ productName }: PurchaseStatusProps) {
+  const { 
+    hasValidPurchase, 
+    hasActiveSubscription, 
+    hasPurchased,
+    loading 
+  } = useUserPurchases();
+
+  if (loading) {
+    return <Badge variant="secondary">检查中...</Badge>;
+  }
+
+  if (hasActiveSubscription(productName)) {
+    return <Badge variant="default">订阅中</Badge>;
+  }
+
+  if (hasPurchased(productName)) {
+    return <Badge variant="default">已购买</Badge>;
+  }
+
+  return <Badge variant="outline">未购买</Badge>;
+}
+```
+
+## 环境变量配置
+
+```bash
+# Stripe 配置
+STRIPE_SECRET_KEY="sk_test_your_stripe_secret_key"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_your_stripe_publishable_key"
+STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
+
+# 应用配置
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+## 数据库表结构
+
+### 支付表
+```sql
+CREATE TABLE payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+  status VARCHAR(50) NOT NULL,
+  stripe_payment_intent_id TEXT,
+  product_name VARCHAR(255),
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 订阅表
+```sql
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  stripe_subscription_id TEXT UNIQUE NOT NULL,
+  stripe_customer_id TEXT,
+  status VARCHAR(50) NOT NULL,
+  plan_name VARCHAR(100) NOT NULL,
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## 最佳实践
+
+### 1. 安全性
+- 验证所有 Webhook 签名
+- 使用环境变量存储敏感信息
+- 在服务器端验证支付状态
+- 实施幂等性检查
+
+### 2. 错误处理
+```typescript
+const handlePaymentError = (error: any) => {
+  switch (error.type) {
+    case 'card_error':
+      return '银行卡被拒绝，请检查卡片信息';
+    case 'rate_limit_error':
+      return '请求过于频繁，请稍后再试';
+    case 'invalid_request_error':
+      return '支付请求无效';
+    case 'authentication_error':
+      return '认证失败';
+    case 'api_connection_error':
+      return '网络连接错误';
+    case 'api_error':
+      return 'Stripe 服务暂时不可用';
+    default:
+      return '支付处理失败，请稍后再试';
+  }
+};
+```
+
+### 3. 用户体验
+- 提供清晰的支付状态反馈
+- 实现加载状态
+- 支持多种支付方式
+- 提供详细的错误信息
+
+### 4. 监控和日志
+```typescript
+// 记录支付事件
+const logPaymentEvent = (event: string, data: any) => {
+  console.log(`Payment Event: ${event}`, {
+    timestamp: new Date().toISOString(),
+    userId: data.userId,
+    amount: data.amount,
+    currency: data.currency,
+    status: data.status,
+  });
+};
+```
+
+### 5. 测试策略
+- 使用 Stripe 测试模式
+- 测试各种支付场景
+- 验证 Webhook 处理
+- 测试订阅生命周期
+description:
+globs:
+alwaysApply: false
+---

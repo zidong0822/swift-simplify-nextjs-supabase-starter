@@ -1,0 +1,734 @@
+# 国际化 (i18n) 指南
+
+## 技术栈
+
+本项目使用 **Next-Intl** 作为国际化解决方案，支持多语言切换和本地化功能。
+
+### 支持语言
+
+- 🇺🇸 **English (en)** - 默认语言
+- 🇨🇳 **中文简体 (zh)** - 中文支持
+- 🇯🇵 **日本語 (ja)** - 日语支持
+
+## 核心配置
+
+### i18n 路由配置
+```typescript
+// i18n/routing.ts
+import { defineRouting } from 'next-intl/routing';
+
+export const routing = defineRouting({
+  locales: ['en', 'zh', 'ja'],
+  defaultLocale: 'en',
+  pathnames: {
+    '/': '/',
+    '/dashboard': {
+      en: '/dashboard',
+      zh: '/dashboard',
+      ja: '/dashboard'
+    },
+    '/pricing': {
+      en: '/pricing',
+      zh: '/pricing',
+      ja: '/pricing'
+    }
+  }
+});
+```
+
+### i18n 请求配置
+```typescript
+// i18n/request.ts
+import { getRequestConfig } from 'next-intl/server';
+import { routing } from './routing';
+
+export default getRequestConfig(async ({ locale }) => {
+  // 验证传入的 locale 参数
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
+  return {
+    messages: (await import(`../messages/${locale}.json`)).default
+  };
+});
+```
+
+### Next.js 配置
+```typescript
+// next.config.ts
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // 其他配置
+};
+
+export default withNextIntl(nextConfig);
+```
+
+## 翻译文件结构
+
+### 英语翻译 (messages/en.json)
+```json
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "pricing": "Pricing",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "forgotPassword": "Forgot Password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up"
+    },
+    "register": {
+      "title": "Sign Up",
+      "name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Sign Up",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}!",
+    "stats": {
+      "totalUsers": "Total Users",
+      "revenue": "Revenue",
+      "orders": "Orders"
+    }
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "features": "Features",
+    "getStarted": "Get Started",
+    "currentPlan": "Current Plan"
+  }
+}
+```
+
+### 中文翻译 (messages/zh.json)
+```json
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "发生错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑"
+  },
+  "navigation": {
+    "home": "首页",
+    "dashboard": "仪表板",
+    "pricing": "定价",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出"
+  },
+  "auth": {
+    "login": {
+      "title": "登录",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "forgotPassword": "忘记密码？",
+      "noAccount": "没有账户？",
+      "signUp": "注册"
+    },
+    "register": {
+      "title": "注册",
+      "name": "姓名",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "submit": "注册",
+      "hasAccount": "已有账户？",
+      "signIn": "登录"
+    }
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcome": "欢迎回来，{name}！",
+    "stats": {
+      "totalUsers": "总用户数",
+      "revenue": "收入",
+      "orders": "订单"
+    }
+  },
+  "pricing": {
+    "title": "选择您的计划",
+    "monthly": "月付",
+    "annually": "年付",
+    "features": "功能",
+    "getStarted": "开始使用",
+    "currentPlan": "当前计划"
+  }
+}
+```
+
+### 日语翻译 (messages/ja.json)
+```json
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "dashboard": "ダッシュボード",
+    "pricing": "料金プラン",
+    "login": "ログイン",
+    "register": "登録",
+    "logout": "ログアウト"
+  },
+  "auth": {
+    "login": {
+      "title": "ログイン",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "submit": "ログイン",
+      "forgotPassword": "パスワードを忘れた方",
+      "noAccount": "アカウントをお持ちでない方",
+      "signUp": "登録"
+    },
+    "register": {
+      "title": "登録",
+      "name": "氏名",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認",
+      "submit": "登録",
+      "hasAccount": "既にアカウントをお持ちの方",
+      "signIn": "ログイン"
+    }
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "welcome": "おかえりなさい、{name}さん！",
+    "stats": {
+      "totalUsers": "総ユーザー数",
+      "revenue": "収益",
+      "orders": "注文数"
+    }
+  },
+  "pricing": {
+    "title": "プランを選択",
+    "monthly": "月額",
+    "annually": "年額",
+    "features": "機能",
+    "getStarted": "開始",
+    "currentPlan": "現在のプラン"
+  }
+}
+```
+
+## 使用方法
+
+### 在组件中使用翻译
+```typescript
+// components/Header.tsx
+"use client";
+
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
+
+export function Header() {
+  const t = useTranslations('navigation');
+
+  return (
+    <header>
+      <nav>
+        <Link href="/">{t('home')}</Link>
+        <Link href="/dashboard">{t('dashboard')}</Link>
+        <Link href="/pricing">{t('pricing')}</Link>
+      </nav>
+    </header>
+  );
+}
+```
+
+### 带参数的翻译
+```typescript
+// components/Dashboard.tsx
+"use client";
+
+import { useTranslations } from 'next-intl';
+
+interface DashboardProps {
+  userName: string;
+}
+
+export function Dashboard({ userName }: DashboardProps) {
+  const t = useTranslations('dashboard');
+
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+      <p>{t('welcome', { name: userName })}</p>
+    </div>
+  );
+}
+```
+
+### 在服务器组件中使用
+```typescript
+// app/[locale]/dashboard/page.tsx
+import { getTranslations } from 'next-intl/server';
+
+export default async function DashboardPage() {
+  const t = await getTranslations('dashboard');
+
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+      <div className="stats">
+        <div>
+          <h3>{t('stats.totalUsers')}</h3>
+          <p>1,234</p>
+        </div>
+        <div>
+          <h3>{t('stats.revenue')}</h3>
+          <p>$12,345</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## 语言切换器
+
+### 语言切换组件
+```typescript
+// components/language-switcher.tsx
+"use client";
+
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/routing';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+const languages = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+];
+
+export function LanguageSwitcher() {
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const currentLanguage = languages.find(lang => lang.code === locale);
+
+  const handleLanguageChange = (newLocale: string) => {
+    router.push(pathname, { locale: newLocale });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          {currentLanguage?.flag} {currentLanguage?.name}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {languages.map((language) => (
+          <DropdownMenuItem
+            key={language.code}
+            onClick={() => handleLanguageChange(language.code)}
+            className={language.code === locale ? 'bg-accent' : ''}
+          >
+            {language.flag} {language.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+```
+
+## 中间件配置
+
+### 国际化中间件
+```typescript
+// middleware.ts
+import createMiddleware from 'next-intl/middleware';
+import { betterFetch } from "@better-fetch/fetch";
+import type { Session } from "better-auth/types";
+import { NextRequest, NextResponse } from "next/server";
+import { routing } from './i18n/routing';
+
+// 创建国际化中间件
+const intlMiddleware = createMiddleware(routing);
+
+export default async function middleware(request: NextRequest) {
+  // 首先处理国际化
+  const intlResponse = intlMiddleware(request);
+  
+  // 如果国际化中间件返回重定向，直接返回
+  if (intlResponse.status === 302) {
+    return intlResponse;
+  }
+
+  // 然后处理认证
+  const { data: session } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: request.nextUrl.origin,
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    }
+  );
+
+  // 保护仪表板路由
+  if (request.nextUrl.pathname.includes('/dashboard')) {
+    if (!session) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 重定向已登录用户
+  if (request.nextUrl.pathname.includes('/login') || 
+      request.nextUrl.pathname.includes('/register')) {
+    if (session) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+  }
+
+  return intlResponse;
+}
+
+export const config = {
+  matcher: [
+    // 匹配所有路径除了 api、_next/static、_next/image 和 favicon.ico
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
+```
+
+## 数字和日期格式化
+
+### 数字格式化
+```typescript
+// utils/formatters.ts
+import { useFormatter } from 'next-intl';
+
+export function useNumberFormatters() {
+  const format = useFormatter();
+
+  return {
+    currency: (amount: number, currency = 'USD') =>
+      format.number(amount, {
+        style: 'currency',
+        currency,
+      }),
+    
+    percentage: (value: number) =>
+      format.number(value, {
+        style: 'percent',
+        minimumFractionDigits: 1,
+      }),
+    
+    decimal: (value: number) =>
+      format.number(value, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+  };
+}
+```
+
+### 日期格式化
+```typescript
+// utils/date-formatters.ts
+import { useFormatter } from 'next-intl';
+
+export function useDateFormatters() {
+  const format = useFormatter();
+
+  return {
+    short: (date: Date) =>
+      format.dateTime(date, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }),
+    
+    long: (date: Date) =>
+      format.dateTime(date, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long',
+      }),
+    
+    time: (date: Date) =>
+      format.dateTime(date, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    
+    relative: (date: Date) =>
+      format.relativeTime(date),
+  };
+}
+```
+
+## 表单验证国际化
+
+### Zod 错误消息
+```typescript
+// lib/validations.ts
+import { z } from 'zod';
+import { getTranslations } from 'next-intl/server';
+
+export async function createUserSchema() {
+  const t = await getTranslations('validation');
+
+  return z.object({
+    name: z
+      .string()
+      .min(2, t('name.min'))
+      .max(50, t('name.max')),
+    email: z
+      .string()
+      .email(t('email.invalid')),
+    password: z
+      .string()
+      .min(8, t('password.min'))
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t('password.weak')),
+  });
+}
+```
+
+### 验证错误翻译
+```json
+// messages/en.json (validation 部分)
+{
+  "validation": {
+    "name": {
+      "min": "Name must be at least 2 characters",
+      "max": "Name cannot exceed 50 characters"
+    },
+    "email": {
+      "invalid": "Please enter a valid email address"
+    },
+    "password": {
+      "min": "Password must be at least 8 characters",
+      "weak": "Password must contain uppercase, lowercase, and numbers"
+    }
+  }
+}
+```
+
+## SEO 和元数据
+
+### 国际化页面元数据
+```typescript
+// app/[locale]/layout.tsx
+import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
+
+interface RootLayoutProps {
+  children: React.ReactNode;
+  params: { locale: string };
+}
+
+export async function generateMetadata({
+  params: { locale }
+}: {
+  params: { locale: string }
+}): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+
+  return {
+    title: {
+      template: `%s | ${t('title')}`,
+      default: t('title'),
+    },
+    description: t('description'),
+    keywords: t('keywords').split(','),
+  };
+}
+```
+
+## 最佳实践
+
+### 1. 翻译键命名
+- 使用嵌套结构组织翻译键
+- 使用描述性的键名
+- 保持一致的命名约定
+
+```json
+{
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "form": {
+        "email": "Email",
+        "password": "Password"
+      }
+    }
+  }
+}
+```
+
+### 2. 占位符使用
+```typescript
+// 好的做法
+t('welcome', { name: user.name, count: items.length });
+
+// 翻译文件
+{
+  "welcome": "Welcome {name}! You have {count} items."
+}
+```
+
+### 3. 复数形式处理
+```json
+{
+  "items": {
+    "zero": "No items",
+    "one": "One item", 
+    "other": "{count} items"
+  }
+}
+```
+
+### 4. 翻译文件管理
+- 保持翻译文件同步
+- 使用翻译工具验证完整性
+- 定期审查翻译质量
+
+### 5. 性能优化
+```typescript
+// 按需加载翻译
+const messagesPromise = import(`../messages/${locale}.json`);
+
+// 缓存翻译
+const messages = await messagesPromise;
+```
+
+### 6. 测试策略
+```typescript
+// 测试不同语言的组件
+describe('Header Component', () => {
+  it('renders in English', () => {
+    render(<Header />, { locale: 'en' });
+    expect(screen.getByText('Home')).toBeInTheDocument();
+  });
+
+  it('renders in Chinese', () => {
+    render(<Header />, { locale: 'zh' });
+    expect(screen.getByText('首页')).toBeInTheDocument();
+  });
+});
+```
+
+## 翻译工作流
+
+### 1. 添加新翻译
+1. 在英文翻译文件中添加新键
+2. 在其他语言文件中添加对应翻译
+3. 在组件中使用新的翻译键
+4. 测试所有语言版本
+
+### 2. 更新现有翻译
+1. 修改翻译文件
+2. 检查所有使用该键的组件
+3. 验证翻译准确性
+4. 更新相关测试
+
+### 3. 翻译验证脚本
+```typescript
+// scripts/validate-translations.ts
+import fs from 'fs';
+import path from 'path';
+
+const locales = ['en', 'zh', 'ja'];
+const messagesDir = path.join(process.cwd(), 'messages');
+
+function validateTranslations() {
+  const enMessages = JSON.parse(
+    fs.readFileSync(path.join(messagesDir, 'en.json'), 'utf8')
+  );
+
+  const missingKeys: Record<string, string[]> = {};
+
+  locales.slice(1).forEach(locale => {
+    const messages = JSON.parse(
+      fs.readFileSync(path.join(messagesDir, `${locale}.json`), 'utf8')
+    );
+    
+    missingKeys[locale] = findMissingKeys(enMessages, messages);
+  });
+
+  console.log('Missing translations:', missingKeys);
+}
+
+function findMissingKeys(source: any, target: any, prefix = ''): string[] {
+  const missing: string[] = [];
+  
+  Object.keys(source).forEach(key => {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    
+    if (!(key in target)) {
+      missing.push(fullKey);
+    } else if (typeof source[key] === 'object' && typeof target[key] === 'object') {
+      missing.push(...findMissingKeys(source[key], target[key], fullKey));
+    }
+  });
+  
+  return missing;
+}
+
+validateTranslations();
+```
+description:
+globs:
+alwaysApply: false
+---

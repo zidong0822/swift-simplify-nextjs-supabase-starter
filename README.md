@@ -1,27 +1,31 @@
-# Swift Simplify Next.js + Supabase 启动模板
+# Swift Simplify Next.js + Supabase Starter Template
 
-一个现代化的 Next.js 15 启动模板，集成了 Supabase 身份验证、React Query 数据获取，以及内置的查询和认证包装器。该模板旨在通过提供预配置的 hooks、实用工具和最佳实践来加速开发。
+A modern Next.js 15 starter template with Supabase integration, Better Auth authentication, React Query data fetching, and built-in query and authentication wrappers. This template is designed to accelerate development by providing pre-configured hooks, utilities, and best practices.
 
-## 🌟 主要特性
+## 🌟 Key Features
 
-- **Next.js 15** - 最新版本，提供优化的性能和开发体验
-- **Supabase 集成** - 内置身份验证系统和用户会话管理
-- **React Query** - 高效的数据获取和缓存管理
-- **ShadCN 组件** - 精美的预构建 UI 组件
-- **Tailwind CSS** - 实用优先的 CSS 框架
-- **Zod 验证** - 基于模式的表单验证
-- **预构建 Hooks** - 用于数据获取和修改的自定义 hooks
-- **类型安全** - 完整的 TypeScript 支持
+- **Next.js 15** - Latest version with optimized performance and developer experience
+- **Better Auth** - Modern authentication system with email verification and social login
+- **Supabase Integration** - Database operations and user session management
+- **React Query** - Efficient data fetching and caching management
+- **ShadCN Components** - Beautiful pre-built UI components
+- **Tailwind CSS** - Utility-first CSS framework
+- **Stripe Integration** - Payment processing and subscription management
+- **Zod Validation** - Schema-based form validation
+- **Pre-built Hooks** - Custom hooks for data fetching and mutations
+- **Type Safety** - Full TypeScript support
+- **Docker Support** - Containerized deployment ready
+- **Internationalization** - Multi-language support (EN, ZH, JA)
 
-## 📦 安装
+## 📦 Installation
 
-使用 CLI 创建新项目（如果可用）：
+### Quick Start with CLI (if available)
 
 ```bash
 npx create-swift-simplify-starter@latest my-project
 ```
 
-或手动克隆仓库：
+### Manual Installation
 
 ```bash
 git clone https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter.git my-project
@@ -29,88 +33,113 @@ cd my-project
 pnpm install
 ```
 
-## ⚙️ 环境配置
+## ⚙️ Environment Setup
 
-1. 创建 `.env.local` 文件并添加：
+### 1. Environment Variables
+
+Create a `.env.local` file and add the following configuration:
 
 ```bash
+# Database Connection (using your existing Supabase database)
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+
+# Better Auth Core Configuration (required - at least 32 characters)
+BETTER_AUTH_SECRET="your-super-secret-key-here-must-be-at-least-32-characters-long-for-security"
+BETTER_AUTH_URL="http://localhost:3000/api/auth"
+
+# App URL Configuration
+NEXT_PUBLIC_APP_URL="http://localhost:3000"  # Development
+# NEXT_PUBLIC_APP_URL="https://yourdomain.com"  # Production
+
+# Resend Email Service (required)
+RESEND_API_KEY="re_your_resend_api_key_here"
+EMAIL_FROM="noreply@yourdomain.com"
+
+# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Stripe Configuration (optional)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# Social Login (optional)
+GITHUB_CLIENT_ID="your_github_client_id"
+GITHUB_CLIENT_SECRET="your_github_client_secret"
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
 ```
 
-2. 启动开发服务器：
+### 2. Database Setup
+
+Run the database migrations:
+
+```bash
+# Install Supabase CLI if not already installed
+pnpm supabase migration up
+```
+
+### 3. Start Development Server
 
 ```bash
 pnpm dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+Visit [http://localhost:3000](http://localhost:3000) to view the application.
 
-## 📚 使用指南
+## 📚 Usage Guide
 
-### 认证系统
+### Authentication System
 
-使用 `AuthContext` 管理全局认证状态：
+The project uses **Better Auth** for authentication with support for:
+
+- Email/Password authentication with verification
+- Social login (GitHub, Google)
+- Session management
+- User profile management
 
 ```tsx
-"use client";
+import { useAuth } from "@/lib/auth-context";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const MyComponent = () => {
+  const { user, loading } = useAuth();
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["user"],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getUser();
-      return data?.user ?? null;
-    },
-    staleTime: 0,
-  });
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <AuthContext.Provider value={{ user: user ?? null, loading: isLoading }}>
-      {children}
-    </AuthContext.Provider>
+    <div>{user ? <p>Welcome, {user.name}!</p> : <p>Please log in</p>}</div>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth 必须在 AuthProvider 内使用");
-  }
-  return context;
-}
+};
 ```
 
-### 数据获取
+### Data Fetching
 
-使用 `useClientFetch` hook 在客户端组件中获取数据：
+Use the `useClientFetch` hook for client-side data fetching:
 
 ```tsx
-import { useClientFetch } from "@/hooks/useClientFetch";
+import { useClientFetch } from "@/hooks/use-client-fetch";
 
 const Posts = () => {
   const { data, isLoading } = useClientFetch("posts", "posts");
 
-  if (isLoading) return <div>加载中...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return <ul>{data?.map((post) => <li key={post.id}>{post.title}</li>)}</ul>;
 };
 ```
 
-#### 高级筛选示例
+#### Advanced Filtering Example
 
 ```tsx
 const FilteredUsers = () => {
   const { data, isLoading } = useClientFetch(
-    "filtered-users", // 缓存键
-    "users", // 表名
-    5000, // 缓存时间
-    (query) => query.eq("role", "admin") // Supabase 查询过滤器
+    "filtered-users", // Cache key
+    "users", // Table name
+    5000, // Cache time
+    (query) => query.eq("role", "admin") // Supabase query filter
   );
 
-  if (isLoading) return <div>加载中...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <ul>
@@ -124,36 +153,36 @@ const FilteredUsers = () => {
 };
 ```
 
-### 数据修改
+### Data Mutations
 
-使用 `useClientMutate` hook 进行数据的增删改：
+Use the `useClientMutate` hook for data modifications:
 
 ```tsx
-import { useClientMutate } from "@/hooks/useClientMutate";
+import { useClientMutate } from "@/hooks/use-client-mutation";
 
-// 添加数据
+// Insert data
 const AddPost = () => {
   const mutation = useClientMutate("posts", "insert");
 
   const handleSubmit = () => {
-    mutation.mutate({ title: "新文章", content: "内容" });
+    mutation.mutate({ title: "New Post", content: "Content" });
   };
 
-  return <button onClick={handleSubmit}>添加文章</button>;
+  return <button onClick={handleSubmit}>Add Post</button>;
 };
 
-// 更新数据
+// Update data
 const UpdatePost = () => {
   const mutation = useClientMutate("posts", "update");
 
   const handleUpdate = () => {
-    mutation.mutate({ id: 1, title: "更新的文章" });
+    mutation.mutate({ id: 1, title: "Updated Post" });
   };
 
-  return <button onClick={handleUpdate}>更新文章</button>;
+  return <button onClick={handleUpdate}>Update Post</button>;
 };
 
-// 删除数据
+// Delete data
 const DeletePost = () => {
   const mutation = useClientMutate("posts", "delete");
 
@@ -161,52 +190,172 @@ const DeletePost = () => {
     mutation.mutate({ id: 1 });
   };
 
-  return <button onClick={handleDelete}>删除文章</button>;
+  return <button onClick={handleDelete}>Delete Post</button>;
 };
 ```
 
-## 📁 项目结构
+### Stripe Integration
+
+For payment processing and subscriptions:
+
+```tsx
+import { useStripe } from "@/hooks/useStripe";
+import { useUserPurchases } from "@/hooks/useUserPurchases";
+
+const PricingComponent = () => {
+  const { redirectToCheckout, loading } = useStripe();
+  const { hasValidPurchase, canPurchase } = useUserPurchases();
+
+  const handlePurchase = (priceId: string) => {
+    redirectToCheckout(priceId);
+  };
+
+  return (
+    <div>
+      {hasValidPurchase("pro-plan") ? (
+        <p>You have access to Pro features!</p>
+      ) : (
+        <button onClick={() => handlePurchase("price_xyz")} disabled={loading}>
+          {loading ? "Processing..." : "Upgrade to Pro"}
+        </button>
+      )}
+    </div>
+  );
+};
+```
+
+## 📁 Project Structure
 
 ```
 📦 swift-simplify-starter
-├── 📂 app                 # Next.js 应用目录
-│   ├── 📂 (auth)         # 认证相关页面
-│   ├── 📂 (dashboard)    # 仪表板页面
-│   ├── layout.tsx        # 主布局
-│   └── page.tsx          # 首页
-├── 📂 components         # 共享组件
-├── 📂 hooks              # 自定义 Hooks
-├── 📂 lib                # 工具函数
-├── 📂 public             # 静态资源
-├── 📂 supabase           # Supabase 集成
-│   ├── client.ts         # 客户端配置
-│   └── server.ts         # 服务端工具
-└── 📂 docs               # 项目文档
-    ├── 📂 landing-page   # 登陆页面文档
-    ├── development.md    # 开发指南
-    ├── deployment.md     # 部署指南
-    └── contributing.md   # 贡献指南
+├── 📂 app                    # Next.js App Router
+│   ├── 📂 (auth)            # Authentication pages
+│   │   ├── login/           # Login page
+│   │   ├── register/        # Registration page
+│   │   └── actions.ts       # Auth actions
+│   ├── 📂 (dashboard)       # Dashboard pages
+│   │   ├── dashboard/       # Main dashboard
+│   │   ├── profile/         # User profile
+│   │   └── layout.tsx       # Dashboard layout
+│   ├── 📂 api               # API routes
+│   │   ├── auth/            # Better Auth API
+│   │   └── stripe/          # Stripe webhooks
+│   ├── layout.tsx           # Root layout
+│   └── page.tsx             # Home page
+├── 📂 components            # Shared components
+│   ├── 📂 ui                # ShadCN UI components
+│   ├── 📂 layout            # Layout components
+│   │   ├── Header.tsx       # Navigation header
+│   │   ├── Footer.tsx       # Footer
+│   │   ├── Hero.tsx         # Hero section
+│   │   ├── Features.tsx     # Features section
+│   │   ├── Pricing.tsx      # Pricing section
+│   │   └── FAQ.tsx          # FAQ section
+│   └── 📂 user              # User-related components
+├── 📂 hooks                 # Custom React hooks
+│   ├── use-client-fetch.ts  # Data fetching hook
+│   ├── use-client-mutation.ts # Data mutation hook
+│   ├── useStripe.ts         # Stripe integration hook
+│   └── useUserPurchases.ts  # User purchase management
+├── 📂 lib                   # Utility functions
+│   ├── auth.ts              # Better Auth configuration
+│   ├── auth-client.ts       # Auth client setup
+│   ├── auth-context.tsx     # Auth context provider
+│   ├── stripe.ts            # Stripe client
+│   └── utils.ts             # General utilities
+├── 📂 supabase              # Supabase integration
+│   ├── client.ts            # Client configuration
+│   ├── server.ts            # Server utilities
+│   └── migrations/          # Database migrations
+├── 📂 messages              # Internationalization files
+│   ├── en.json              # English translations
+│   ├── zh.json              # Chinese translations
+│   └── ja.json              # Japanese translations
+├── 📂 config                # Configuration files
+├── 📂 types                 # TypeScript type definitions
+└── 📂 docs                  # Project documentation
+    ├── 📂 landing-page      # Landing page documentation
+    ├── 📂 design            # Design system docs
+    ├── installation.md      # Installation guide
+    ├── development.md       # Development guide
+    ├── deployment.md        # Deployment guide
+    └── contributing.md      # Contributing guide
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-- **框架**: Next.js 15
-- **数据库**: Supabase
-- **状态管理**: React Query
-- **UI 组件**: ShadCN
-- **样式**: Tailwind CSS
-- **表单验证**: Zod
-- **类型系统**: TypeScript
+- **Framework**: Next.js 15 with App Router
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Better Auth
+- **Payment**: Stripe
+- **State Management**: React Query (TanStack Query)
+- **UI Components**: ShadCN/UI + Radix UI
+- **Styling**: Tailwind CSS
+- **Form Validation**: Zod
+- **Type System**: TypeScript
+- **Email**: Resend
+- **Deployment**: Docker + Vercel ready
 
-## 📖 文档
+## 🚀 Deployment
 
-详细文档请参考 `docs` 目录：
+### Vercel (Recommended)
 
-- [开发指南](./docs/development.md)
-- [部署指南](./docs/deployment.md)
-- [贡献指南](./docs/contributing.md)
-- [登陆页面文档](./docs/landing-page/README.md)
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables
+3. Deploy automatically
 
-## 📄 许可证
+### Docker
 
-MIT © [您的名字]
+```bash
+# Build the image
+docker build -t swift-simplify .
+
+# Run the container
+docker run -p 3000:3000 swift-simplify
+```
+
+### Self-hosted
+
+```bash
+# Build the project
+pnpm build
+
+# Start the server
+pnpm start
+```
+
+## 📖 Documentation
+
+Detailed documentation is available in the `docs` directory:
+
+- [Installation Guide](./docs/installation.md)
+- [Development Guide](./docs/development.md)
+- [Deployment Guide](./docs/deployment.md)
+- [Contributing Guide](./docs/contributing.md)
+- [Better Auth Setup](./docs/better-auth.md)
+- [Landing Page Documentation](./docs/landing-page/README.md)
+- [Design System](./docs/design/README.md)
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./docs/contributing.md) for details.
+
+## 📄 License
+
+MIT © [Your Name]
+
+---
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [documentation](./docs/)
+2. Search [existing issues](https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/issues)
+3. Create a [new issue](https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter/issues/new)
+
+## 🔗 Links
+
+- [Live Demo](https://your-demo-url.com)
+- [Documentation](./docs/)
+- [GitHub Repository](https://github.com/zidong0822/swift-simplify-nextjs-supabase-starter)
